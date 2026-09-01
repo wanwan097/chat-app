@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatApp - Mirip WhatsApp</title>
+  <style>
+    /* ===== CSS ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      display: flex;
+      height: 100vh;
+      background: #e5ddd5;
+    }
+
+    /* Login/Register Screen */
+    #auth-screen {
+      position: fixed;
+      inset: 0;
+      background: #075e54;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .auth-container {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    .auth-container h2 {
+      color: #075e54;
+      margin-bottom: 1.5rem;
+    }
+
+    .auth-container input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    .auth-container button {
+      width: 100%;
+      padding: 10px;
+      background: #25d366;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .auth-container button:hover {
+      background: #1eb955;
+    }
+
+    .auth-container .toggle-mode {
+      color: #075e54;
+      cursor: pointer;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .auth-error {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    /* Main App Layout */
+    #app {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+    }
+
+    /* Sidebar */
+    #sidebar {
+      width: 350px;
+      background: #ffffff;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #sidebar-header {
+      background: #075e54;
+      padding: 15px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #sidebar-header .profile-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #sidebar-header .profile-info .phone {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    #logout-btn {
+      background: transparent;
+      border: 1px solid white;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #logout-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .search-container {
+      padding: 10px;
+      background: #f0f0f0;
+      display: flex;
+      gap: 5px;
+    }
+
+    .search-container input {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+    }
+
+    .search-container button {
+      padding: 8px 12px;
+      background: #25d366;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .search-result {
+      padding: 10px;
+      background: #e1f5ea;
+      border-bottom: 1px solid #ccc;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #chat-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .chat-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .chat-item:hover {
+      background: #f5f5f5;
+    }
+
+    .chat-item.active {
+      background: #ebebeb;
+    }
+
+    .chat-item .avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .chat-item .chat-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chat-item .chat-details .name {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .chat-item .chat-details .last-msg {
+      color: #777;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-item .chat-time {
+      font-size: 12px;
+      color: #999;
+      margin-left: 10px;
+    }
+
+    /* Chat Area */
+    #chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #e5ddd5;
+    }
+
+    #chat-header {
+      background: #075e54;
+      color: white;
+      padding: 15px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #messages-container {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 8px 12px;
+      border-radius: 10px;
+      margin-bottom: 5px;
+      position: relative;
+      word-wrap: break-word;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    }
+
+    .message.sent {
+      align-self: flex-end;
+      background: #dcf8c6;
+      border-top-right-radius: 0;
+    }
+
+    .message.received {
+      align-self: flex-start;
+      background: white;
+      border-top-left-radius: 0;
+    }
+
+    .message .msg-text {
+      margin-bottom: 3px;
+    }
+
+    .message .msg-file {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .message img {
+      max-width: 200px;
+      max-height: 200px;
+      border-radius: 5px;
+      display: block;
+    }
+
+    .message .msg-time {
+      font-size: 11px;
+      color: #999;
+      text-align: right;
+    }
+
+    #message-input-area {
+      background: #f0f0f0;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #message-input-area input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 20px;
+      outline: none;
+      font-size: 16px;
+    }
+
+    #message-input-area .icon-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #075e54;
+      padding: 5px;
+    }
+
+    #message-input-area .send-btn {
+      background: #25d366;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .empty-chat {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #777;
+      font-size: 18px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      #sidebar {
+        width: 100%;
+      }
+      #chat-area {
+        display: none;
+      }
+      #chat-area.active {
+        display: flex;
+        position: fixed;
+        inset: 0;
+      }
+      #sidebar.hidden {
+        display: none;
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Layar Autentikasi -->
+  <div id="auth-screen">
+    <div class="auth-container">
+      <h2>ChatApp</h2>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button id="auth-btn">Login</button>
+      <div class="toggle-mode" id="toggle-auth">Belum punya akun? Daftar</div>
+      <div class="auth-error" id="auth-error"></div>
+    </div>
+  </div>
+
+  <!-- Aplikasi Utama -->
+  <div id="app" class="hidden">
+    <!-- Sidebar -->
+    <div id="sidebar">
+      <div id="sidebar-header">
+        <div class="profile-info">
+          <span id="display-email">user@mail.com</span>
+          <span class="phone">Nomor HP: <span id="my-phone">-</span></span>
+        </div>
+        <button id="logout-btn">Logout</button>
+      </div>
+      <div class="search-container">
+        <input type="text" id="search-phone" placeholder="Cari nomor HP...">
+        <button id="search-btn">Cari</button>
+      </div>
+      <div class="search-result" id="search-result">
+        <span id="search-result-info"></span>
+        <button id="start-chat-btn">Chat</button>
+      </div>
+      <div id="chat-list"></div>
+    </div>
+
+    <!-- Area Chat -->
+    <div id="chat-area">
+      <div id="chat-header">
+        <span id="chat-partner-name">Pilih kontak untuk mulai chat</span>
+      </div>
+      <div id="messages-container">
+        <div class="empty-chat" id="empty-chat">Pilih atau cari kontak untuk memulai percakapan</div>
+      </div>
+      <div id="message-input-area">
+        <button class="icon-btn" id="attach-btn" title="Lampirkan file/foto">📎</button>
+        <input type="text" id="message-input" placeholder="Ketik pesan...">
+        <input type="file" id="file-input" style="display:none">
+        <button class="send-btn" id="send-btn">Kirim</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Modular SDK -->
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js",
+        "firebase/database": "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js",
+        "firebase/storage": "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js"
+      }
+    }
+  </script>
+
+  <script type="module">
+    // ===== IMPORTS =====
+    import { initializeApp } from "firebase/app";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword, 
+      onAuthStateChanged, 
+      signOut 
+    } from "firebase/auth";
+    import { 
+      getDatabase, 
+      ref, 
+      set, 
+      get, 
+      push, 
+      onValue, 
+      update, 
+      query, 
+      orderByChild, 
+      equalTo 
+    } from "firebase/database";
+    import { 
+      getStorage, 
+      ref as storageRef, 
+      uploadBytes, 
+      getDownloadURL 
+    } from "firebase/storage";
+
+    // ===== FIREBASE CONFIG =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyDBf6bY1q590iT0wzZEYLsX2wGkPdzvHzw",
+      authDomain: "game-e2a69.firebaseapp.com",
+      databaseURL: "https://game-e2a69-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "game-e2a69",
+      storageBucket: "game-e2a69.firebasestorage.app",
+      messagingSenderId: "280861397904",
+      appId: "1:280861397904:web:ea7feedca9a23018489915",
+      measurementId: "G-KGGLVXJ7G5"
+    };
+
+    // ===== INIT FIREBASE =====
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    // ===== VARIABEL GLOBAL =====
+    let currentUser = null;
+    let currentUserUid = null;
+    let currentPhone = null;
+    let activeChatId = null;
+    let activeOtherUid = null;
+    let activeOtherPhone = null;
+    let allChats = {}; // cache daftar chat user
+
+    // ===== DOM ELEMENTS =====
+    const authScreen = document.getElementById('auth-screen');
+    const appDiv = document.getElementById('app');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const authBtn = document.getElementById('auth-btn');
+    const toggleAuth = document.getElementById('toggle-auth');
+    const authError = document.getElementById('auth-error');
+    const displayEmail = document.getElementById('display-email');
+    const myPhoneSpan = document.getElementById('my-phone');
+    const logoutBtn = document.getElementById('logout-btn');
+    const searchPhoneInput = document.getElementById('search-phone');
+    const searchBtn = document.getElementById('search-btn');
+    const searchResultDiv = document.getElementById('search-result');
+    const searchResultInfo = document.getElementById('search-result-info');
+    const startChatBtn = document.getElementById('start-chat-btn');
+    const chatListDiv = document.getElementById('chat-list');
+    const chatArea = document.getElementById('chat-area');
+    const sidebar = document.getElementById('sidebar');
+    const chatPartnerName = document.getElementById('chat-partner-name');
+    const messagesContainer = document.getElementById('messages-container');
+    const emptyChatDiv = document.getElementById('empty-chat');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    const attachBtn = document.getElementById('attach-btn');
+    const fileInput = document.getElementById('file-input');
+
+    let isLoginMode = true; // true = login, false = register
+    let foundUserUid = null;
+    let foundUserPhone = null;
+
+    // ===== FUNGSI UTIL =====
+    function generateRandomPhone() {
+      // Generate 10 digit nomor acak
+      let phone = '';
+      for (let i = 0; i < 10; i++) {
+        phone += Math.floor(Math.random() * 10);
+      }
+      return phone;
+    }
+
+    async function createUniquePhone() {
+      let phone = generateRandomPhone();
+      let exists = true;
+      while (exists) {
+        const snapshot = await get(ref(db, `phoneNumbers/${phone}`));
+        if (!snapshot.exists()) {
+          exists = false;
+        } else {
+          phone = generateRandomPhone();
+        }
+      }
+      return phone;
+    }
+
+    function getChatId(uid1, uid2) {
+      return [uid1, uid2].sort().join('_');
+    }
+
+    function formatTime(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // ===== AUTENTIKASI =====
+    function toggleAuthMode() {
+      isLoginMode = !isLoginMode;
+      authBtn.textContent = isLoginMode ? 'Login' : 'Daftar';
+      toggleAuth.textContent = isLoginMode ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Login';
+    }
+
+    async function handleAuth() {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      if (!email || !password) {
+        authError.textContent = 'Email dan password harus diisi!';
+        return;
+      }
+      authError.textContent = '';
+      try {
+        if (isLoginMode) {
+          await signInWithEmailAndPassword(auth, email, password);
+        } else {
+          await createUserWithEmailAndPassword(auth, email, password);
+        }
+        // onAuthStateChanged akan menangani setelah login
+      } catch (error) {
+        authError.textContent = error.message;
+      }
+    }
+
+    // ===== SETUP USER DATA =====
+    async function setupUserData(user) {
+      currentUserUid = user.uid;
+      currentUser = user;
+      displayEmail.textContent = user.email;
+
+      // Cek apakah user sudah punya nomor HP di database
+      const userRef = ref(db, `users/${user.uid}`);
+      const userSnapshot = await get(userRef);
+
+      let phoneNumber;
+      if (userSnapshot.exists() && userSnapshot.val().phoneNumber) {
+        phoneNumber = userSnapshot.val().phoneNumber;
+      } else {
+        // Generate nomor unik
+        phoneNumber = await createUniquePhone();
+        // Simpan data user
+        await set(userRef, {
+          email: user.email,
+          phoneNumber: phoneNumber
+        });
+        // Simpan mapping phoneNumber -> uid
+        await set(ref(db, `phoneNumbers/${phoneNumber}`), user.uid);
+      }
+
+      currentPhone = phoneNumber;
+      myPhoneSpan.textContent = phoneNumber;
+
+      // Tampilkan aplikasi
+      authScreen.classList.add('hidden');
+      appDiv.classList.remove('hidden');
+
+      // Muat daftar chat
+      loadChatList();
+    }
+
+    // ===== LOAD CHAT LIST =====
+    function loadChatList() {
+      if (!currentUserUid) return;
+      const userChatsRef = ref(db, `userChats/${currentUserUid}`);
+      onValue(userChatsRef, (snapshot) => {
+        chatListDiv.innerHTML = '';
+        if (!snapshot.exists()) {
+          chatListDiv.innerHTML = '<div style="padding:20px;text-align:center;color:#999;">Belum ada percakapan</div>';
+          return;
+        }
+        const chats = snapshot.val();
+        allChats = chats;
+        const sortedChatIds = Object.keys(chats).sort((a,b) => chats[b].timestamp - chats[a].timestamp);
+
+        sortedChatIds.forEach(chatId => {
+          const chatData = chats[chatId];
+          const otherPhone = chatData.otherPhone;
+          const lastMsg = chatData.lastMessage || '';
+          const lastType = chatData.lastMessageType || 'text';
+          const lastTime = chatData.timestamp ? formatTime(chatData.timestamp) : '';
+
+          const chatItem = document.createElement('div');
+          chatItem.className = 'chat-item' + (activeChatId === chatId ? ' active' : '');
+          chatItem.innerHTML = `
+            <div class="avatar">${otherPhone.charAt(0)}</div>
+            <div class="chat-details">
+              <div class="name">${otherPhone}</div>
+              <div class="last-msg">${lastType === 'image' ? '📷 Foto' : lastType === 'file' ? '📎 File' : lastMsg}</div>
+            </div>
+            <div class="chat-time">${lastTime}</div>
+          `;
+          chatItem.addEventListener('click', () => openChat(chatId, chatData.otherUid, otherPhone));
+          chatListDiv.appendChild(chatItem);
+        });
+      });
+    }
+
+    // ===== OPEN CHAT =====
+    function openChat(chatId, otherUid, otherPhone) {
+      activeChatId = chatId;
+      activeOtherUid = otherUid;
+      activeOtherPhone = otherPhone;
+
+      // Update UI
+      chatPartnerName.textContent = otherPhone;
+      emptyChatDiv.style.display = 'none';
+      messagesContainer.innerHTML = '';
+      
+      // Highlight item aktif
+      document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+      // Muat pesan
+      loadMessages(chatId);
+
+      // Mobile: tampilkan area chat
+      if (window.innerWidth <= 768) {
+        sidebar.classList.add('hidden');
+        chatArea.classList.add('active');
+      }
+    }
+
+    // ===== LOAD MESSAGES =====
+    function loadMessages(chatId) {
+      const messagesRef = ref(db, `chats/${chatId}/messages`);
+      onValue(messagesRef, (snapshot) => {
+        messagesContainer.innerHTML = '';
+        if (!snapshot.exists()) return;
+        const messages = snapshot.val();
+        const sortedKeys = Object.keys(messages).sort((a,b) => messages[a].timestamp - messages[b].timestamp);
+        
+        sortedKeys.forEach(key => {
+          const msg = messages[key];
+          const isSent = msg.senderUid === currentUserUid;
+          const messageDiv = document.createElement('div');
+          messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+
+          let content = '';
+          if (msg.type === 'text') {
+            content = `<div class="msg-text">${escapeHtml(msg.text)}</div>`;
+          } else if (msg.type === 'image') {
+            content = `<img src="${msg.fileUrl}" alt="Foto"><div class="msg-text">${escapeHtml(msg.text || '')}</div>`;
+          } else if (msg.type === 'file') {
+            content = `<div class="msg-file">
+              <a href="${msg.fileUrl}" target="_blank">📎 ${escapeHtml(msg.fileName || 'File')}</a>
+            </div><div class="msg-text">${escapeHtml(msg.text || '')}</div>`;
+          }
+          
+          messageDiv.innerHTML = content + `<div class="msg-time">${formatTime(msg.timestamp)}</div>`;
+          messagesContainer.appendChild(messageDiv);
+        });
+        // Scroll ke bawah
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      });
+    }
+
+    // ===== ESCAPE HTML =====
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ===== SEND TEXT MESSAGE =====
+    async function sendMessage(type = 'text', fileUrl = null, fileName = null, text = '') {
+      if (!activeChatId || !activeOtherUid) {
+        alert('Pilih kontak terlebih dahulu!');
+        return;
+      }
+
+      const messageText = text || messageInput.value.trim();
+      if (!messageText && !fileUrl) return;
+
+      const messageData = {
+        senderUid: currentUserUid,
+        senderPhone: currentPhone,
+        type: type,
+        text: messageText,
+        fileUrl: fileUrl,
+        fileName: fileName,
+        timestamp: Date.now()
+      };
+
+      // Push ke messages
+      const messagesRef = ref(db, `chats/${activeChatId}/messages`);
+      const newMsgRef = push(messagesRef);
+      await set(newMsgRef, messageData);
+
+      // Update userChats untuk kedua user
+      const chatUpdateData = {
+        otherUid: activeOtherUid,
+        otherPhone: activeOtherPhone,
+        lastMessage: type === 'text' ? messageText : (type === 'image' ? '📷 Foto' : '📎 File'),
+        lastMessageType: type,
+        timestamp: Date.now()
+      };
+      await set(ref(db, `userChats/${currentUserUid}/${activeChatId}`), chatUpdateData);
+      await set(ref(db, `userChats/${activeOtherUid}/${activeChatId}`), {
+        otherUid: currentUserUid,
+        otherPhone: currentPhone,
+        lastMessage: type === 'text' ? messageText : (type === 'image' ? '📷 Foto' : '📎 File'),
+        lastMessageType: type,
+        timestamp: Date.now()
+      });
+
+      // Kosongkan input
+      if (type === 'text') {
+        messageInput.value = '';
+      }
+    }
+
+    // ===== HANDLE FILE UPLOAD =====
+    async function handleFileUpload(file) {
+      if (!activeChatId) {
+        alert('Pilih kontak terlebih dahulu!');
+        return;
+      }
+      if (!file) return;
+
+      const isImage = file.type.startsWith('image/');
+      const storageReference = storageRef(storage, `chatFiles/${currentUserUid}/${Date.now()}_${file.name}`);
+      
+      try {
+        await uploadBytes(storageReference, file);
+        const downloadURL = await getDownloadURL(storageReference);
+        const type = isImage ? 'image' : 'file';
+        await sendMessage(type, downloadURL, file.name, messageInput.value);
+        messageInput.value = '';
+      } catch (error) {
+        console.error('Upload gagal:', error);
+        alert('Upload file gagal: ' + error.message);
+      }
+    }
+
+    // ===== SEARCH PHONE =====
+    async function searchPhone() {
+      const phone = searchPhoneInput.value.trim();
+      if (!phone) {
+        alert('Masukkan nomor HP!');
+        return;
+      }
+
+      try {
+        const phoneRef = ref(db, `phoneNumbers/${phone}`);
+        const snapshot = await get(phoneRef);
+        if (snapshot.exists()) {
+          foundUserUid = snapshot.val();
+          if (foundUserUid === currentUserUid) {
+            searchResultDiv.style.display = 'flex';
+            searchResultInfo.textContent = 'Ini nomor Anda sendiri';
+            startChatBtn.style.display = 'none';
+          } else {
+            // Dapatkan data user
+            const userSnap = await get(ref(db, `users/${foundUserUid}`));
+            if (userSnap.exists()) {
+              foundUserPhone = phone;
+              searchResultDiv.style.display = 'flex';
+              searchResultInfo.textContent = `Ditemukan: ${phone} (${userSnap.val().email})`;
+              startChatBtn.style.display = 'inline-block';
+            }
+          }
+        } else {
+          searchResultDiv.style.display = 'flex';
+          searchResultInfo.textContent = 'Nomor tidak ditemukan';
+          startChatBtn.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat mencari');
+      }
+    }
+
+    // ===== START CHAT WITH FOUND USER =====
+    function startChatWithFoundUser() {
+      if (!foundUserUid || !foundUserPhone) return;
+      const chatId = getChatId(currentUserUid, foundUserUid);
+      activeChatId = chatId;
+      activeOtherUid = foundUserUid;
+      activeOtherPhone = foundUserPhone;
+      
+      chatPartnerName.textContent = foundUserPhone;
+      emptyChatDiv.style.display = 'none';
+      messagesContainer.innerHTML = '';
+      loadMessages(chatId);
+      
+      // Buat atau update userChats
+      set(ref(db, `userChats/${currentUserUid}/${chatId}`), {
+        otherUid: foundUserUid,
+        otherPhone: foundUserPhone,
+        lastMessage: '',
+        lastMessageType: 'text',
+        timestamp: Date.now()
+      });
+      set(ref(db, `userChats/${foundUserUid}/${chatId}`), {
+        otherUid: currentUserUid,
+        otherPhone: currentPhone,
+        lastMessage: '',
+        lastMessageType: 'text',
+        timestamp: Date.now()
+      });
+
+      // Sembunyikan hasil pencarian
+      searchResultDiv.style.display = 'none';
+      searchPhoneInput.value = '';
+
+      // Mobile: tampilkan chat area
+      if (window.innerWidth <= 768) {
+        sidebar.classList.add('hidden');
+        chatArea.classList.add('active');
+      }
+    }
+
+    // ===== LOGOUT =====
+    async function logout() {
+      await signOut(auth);
+      // Reset UI
+      authScreen.classList.remove('hidden');
+      appDiv.classList.add('hidden');
+      currentUser = null;
+      currentUserUid = null;
+      currentPhone = null;
+      activeChatId = null;
+      activeOtherUid = null;
+      activeOtherPhone = null;
+      chatListDiv.innerHTML = '';
+      messagesContainer.innerHTML = '';
+      chatPartnerName.textContent = 'Pilih kontak untuk mulai chat';
+      emptyChatDiv.style.display = 'flex';
+    }
+
+    // ===== EVENT LISTENERS =====
+    authBtn.addEventListener('click', handleAuth);
+    toggleAuth.addEventListener('click', toggleAuthMode);
+    logoutBtn.addEventListener('click', logout);
+    searchBtn.addEventListener('click', searchPhone);
+    startChatBtn.addEventListener('click', startChatWithFoundUser);
+    sendBtn.addEventListener('click', () => sendMessage('text'));
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage('text');
+    });
+    attachBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFileUpload(e.target.files[0]);
+        fileInput.value = '';
+      }
+    });
+
+    // Mobile back button handling (opsional)
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        sidebar.classList.remove('hidden');
+        chatArea.classList.remove('active');
+      }
+    });
+
+    // ===== AUTH STATE OBSERVER =====
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setupUserData(user);
+      } else {
+        // User signed out
+        authScreen.classList.remove('hidden');
+        appDiv.classList.add('hidden');
+        currentUser = null;
+        currentUserUid = null;
+        currentPhone = null;
+        activeChatId = null;
+      }
+    });
+  </script>
+</body>
+</html>
