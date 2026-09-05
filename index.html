@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OCR Laporan Sales - Geprek Inaja</title>
-    <!-- Tesseract.js dari CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js">
+    </script>
     <style>
         * {
             margin: 0;
@@ -350,6 +350,24 @@
             font-size: 14px;
             color: #6b6b7a;
             margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+        .ocr-status .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ddd;
+            border-top-color: #e85d3a;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
         .dynamic-item {
             display: flex;
@@ -536,7 +554,10 @@
                     <input type="file" id="upload1" accept="image/*" style="display:none;" />
                     <br />
                     <img id="preview1" style="display:none;" alt="Preview Struk 1" />
-                    <div class="ocr-status" id="ocrStatus1">Belum ada gambar</div>
+                    <div class="ocr-status" id="ocrStatus1">
+                        <span class="spinner" id="spinner1"></span>
+                        <span id="statusText1">Belum ada gambar</span>
+                    </div>
                 </div>
 
                 <div class="btn-group">
@@ -586,7 +607,10 @@
                     <input type="file" id="upload2" accept="image/*" style="display:none;" />
                     <br />
                     <img id="preview2" style="display:none;" alt="Preview Struk 2" />
-                    <div class="ocr-status" id="ocrStatus2">Belum ada gambar</div>
+                    <div class="ocr-status" id="ocrStatus2">
+                        <span class="spinner" id="spinner2"></span>
+                        <span id="statusText2">Belum ada gambar</span>
+                    </div>
                 </div>
 
                 <div class="btn-group">
@@ -766,7 +790,7 @@
         }
 
         // ============================================================
-        // UPLOAD & OCR
+        // UPLOAD & OCR (dengan optimasi resize + fast mode)
         // ============================================================
         function setupUpload(shift) {
             const fileInput = document.getElementById(`upload${shift}`);
@@ -782,7 +806,7 @@
                 reader.onload = (ev) => {
                     preview.src = ev.target.result;
                     preview.style.display = 'block';
-                    document.getElementById(`ocrStatus${shift}`).textContent = '📸 Gambar siap, klik Ekstrak Data';
+                    document.getElementById(`statusText${shift}`).textContent = '📸 Gambar siap, klik Ekstrak Data';
                 };
                 reader.readAsDataURL(file);
             });
@@ -790,105 +814,131 @@
 
         async function runOCR(shift) {
             const fileInput = document.getElementById(`upload${shift}`);
-            const status = document.getElementById(`ocrStatus${shift}`);
-            const preview = document.getElementById(`preview${shift}`);
+            const statusText = document.getElementById(`statusText${shift}`);
+            const spinner = document.getElementById(`spinner${shift}`);
 
             if (!fileInput.files || !fileInput.files[0]) {
                 showToast('Pilih foto struk terlebih dahulu!', 'error');
                 return;
             }
 
-            const imageFile = fileInput.files[0];
-            status.textContent = '⏳ Memproses OCR...';
+            // Tampilkan loading
+            spinner.style.display = 'inline-block';
+            statusText.textContent = '⏳ Mempersiapkan gambar...';
 
             try {
-                const result = await Tesseract.recognize(imageFile, 'ind', {
+                // 1. Resize gambar untuk mempercepat OCR
+                const imageFile = fileInput.files[0];
+                const resizedBlob = await resizeImage(imageFile, 1200);
+                statusText.textContent = '⏳ OCR sedang berjalan (mungkin 10-30 detik)...';
+
+                // 2. OCR dengan mode cepat (psm: 6 = blok teks seragam)
+                const result = await Tesseract.recognize(resizedBlob, 'ind', {
                     logger: (m) => {
                         if (m.status === 'recognizing text') {
-                            status.textContent = `⏳ OCR: ${Math.round(m.progress * 100)}%`;
+                            const progress = Math.round(m.progress * 100);
+                            statusText.textContent = `⏳ OCR: ${progress}%`;
                         }
-                    }
+                    },
+                    psm: 6, // Anggap satu blok teks
+                    // opsi lain: psm: 3 (default), psm: 7 (satu baris)
                 });
+
                 const text = result.data.text;
-                status.textContent = `✅ OCR selesai (${text.length} karakter)`;
+                statusText.textContent = `✅ OCR selesai (${text.length} karakter)`;
                 console.log(`OCR Shift ${shift}:`, text);
 
-                // Parse text
+                // 3. Parse hasil OCR
                 const parsed = parseOCRText(text);
                 fillShiftData(shift, parsed);
 
                 showToast(`✅ Data Shift ${shift} berhasil diekstrak`, 'success');
             } catch (err) {
                 console.error(err);
-                status.textContent = '❌ Gagal OCR, coba lagi atau input manual';
-                showToast('❌ Gagal membaca gambar', 'error');
+                statusText.textContent = '❌ Gagal OCR, coba lagi atau input manual';
+                showToast('❌ Gagal membaca gambar, coba foto yang lebih jelas', 'error');
+            } finally {
+                spinner.style.display = 'none';
             }
         }
 
+        // Fungsi resize gambar
+        function resizeImage(file, maxWidth) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const scale = Math.min(1, maxWidth / img.width);
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        canvas.toBlob((blob) => {
+                            if (blob) resolve(blob);
+                            else reject(new Error('Gagal resize gambar'));
+                        }, 'image/jpeg', 0.85);
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
         // ============================================================
-        // PARSING OCR
+        // PARSING OCR (sama seperti sebelumnya)
         // ============================================================
         function parseOCRText(text) {
-            // Normalize: lowercase, remove extra spaces
             const clean = text.replace(/\s+/g, ' ').trim();
             const lines = clean.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-            // Default result
             const result = {
                 sales: 0,
                 cu: 0,
-                menu: [], // [{label, qty}]
-                ecom: [], // [{label, amount}]
-                expenses: [], // [{desc, amount}]
+                menu: [],
+                ecom: [],
+                expenses: [],
             };
 
-            // --- 1. Cari Sales (total penjualan bersih) ---
-            // Pola: "Total Penjualan", "Sales", "Total", dll
+            // 1. Sales
             let salesFound = false;
             for (let line of lines) {
-                // Cari angka dengan format Rp atau angka ribuan
                 const match = line.match(/(?:Rp|RP|rp|R P)\s*[.:]?\s*([\d.,]+)/);
                 if (match) {
                     const num = parseNumber(match[1]);
                     if (num > 0 && !salesFound) {
-                        // asumsikan angka pertama yang cukup besar adalah sales
                         result.sales = num;
                         salesFound = true;
                         break;
                     }
                 }
             }
-            // Jika tidak ketemu, cari angka besar di baris yang mengandung kata "total" atau "sales"
             if (!salesFound) {
                 for (let line of lines) {
                     if (/total|sales|penjualan/i.test(line)) {
                         const nums = line.match(/[\d.,]+/g);
                         if (nums) {
                             const num = parseNumber(nums[nums.length - 1]);
-                            if (num > 0) {
-                                result.sales = num;
-                                salesFound = true;
-                                break;
-                            }
+                            if (num > 0) { result.sales = num;
+                                salesFound = true; break; }
                         }
                     }
                 }
             }
 
-            // --- 2. Cari CU (Total Pax) ---
+            // 2. CU
             for (let line of lines) {
                 if (/pax|cu|customer/i.test(line)) {
                     const nums = line.match(/[\d.,]+/g);
                     if (nums) {
                         const num = parseNumber(nums[nums.length - 1]);
-                        if (num > 0) {
-                            result.cu = Math.round(num);
-                            break;
-                        }
+                        if (num > 0) { result.cu = Math.round(num); break; }
                     }
                 }
             }
-            // Jika belum ketemu, cari angka kecil (biasanya CU < 200)
             if (result.cu === 0) {
                 for (let line of lines) {
                     const nums = line.match(/\b(\d{1,3})\b/g);
@@ -905,39 +955,24 @@
                 }
             }
 
-            // --- 3. Cari Menu ---
-            // Pola: "Nama Menu 5" atau "Nama Menu : 5"
+            // 3. Menu
             const menuKeywords = ['geprek', 'jumbo', 'hemat', 'double', 'chic', 'saos', 'gangnam', 'minerale', 'pucuk', 'sijo',
                 'promo', 'extra'
             ];
             for (let line of lines) {
-                // Cari baris yang mengandung keyword menu dan angka
                 const lower = line.toLowerCase();
                 let matched = false;
                 for (let kw of menuKeywords) {
-                    if (lower.includes(kw)) {
-                        matched = true;
-                        break;
-                    }
+                    if (lower.includes(kw)) { matched = true; break; }
                 }
                 if (!matched) continue;
-
-                // Ekstrak angka di baris
                 const nums = line.match(/\b(\d{1,3})\b/g);
                 let qty = 1;
-                if (nums && nums.length > 0) {
-                    // Ambil angka terakhir
-                    qty = parseInt(nums[nums.length - 1]);
-                }
-                // Bersihkan label: hilangkan angka dan tanda baca
+                if (nums && nums.length > 0) qty = parseInt(nums[nums.length - 1]);
                 let label = line.replace(/[\d.,]+/g, '').replace(/[:*\-]/g, '').trim();
-                if (label.length > 2) {
-                    result.menu.push({ label: label, qty: qty });
-                }
+                if (label.length > 2) result.menu.push({ label, qty });
             }
-            // Jika menu tidak ditemukan, beri contoh kosong
             if (result.menu.length === 0) {
-                // Coba ambil dari baris yang terlihat seperti menu
                 for (let line of lines) {
                     if (line.length > 3 && line.length < 40 && !line.includes('Rp') && !line.includes('rp')) {
                         const nums = line.match(/\b(\d{1,3})\b/g);
@@ -947,23 +982,18 @@
                             qty = parseInt(nums[nums.length - 1]);
                             label = line.replace(/[\d.,]+/g, '').replace(/[:*\-]/g, '').trim();
                         }
-                        if (label.length > 2) {
-                            result.menu.push({ label: label, qty: qty });
-                        }
+                        if (label.length > 2) result.menu.push({ label, qty });
                     }
                 }
             }
 
-            // --- 4. Cari E-Commerce (total nominal) ---
+            // 4. E-commerce
             const ecomKeywords = ['dana', 'transfer', 'shopee', 'gofood', 'qris', 'qpon', 'tiktok', 'e-commerce', 'ecom'];
             for (let line of lines) {
                 const lower = line.toLowerCase();
                 let matched = false;
                 for (let kw of ecomKeywords) {
-                    if (lower.includes(kw)) {
-                        matched = true;
-                        break;
-                    }
+                    if (lower.includes(kw)) { matched = true; break; }
                 }
                 if (!matched) continue;
                 const nums = line.match(/[\d.,]+/g);
@@ -972,12 +1002,12 @@
                     if (num > 0) {
                         let label = line.replace(/[\d.,]+/g, '').replace(/[:*\-]/g, '').trim();
                         if (label.length < 3) label = 'E-Commerce';
-                        result.ecom.push({ label: label, amount: num });
+                        result.ecom.push({ label, amount: num });
                     }
                 }
             }
 
-            // --- 5. Cari Pengeluaran ---
+            // 5. Expenses
             for (let line of lines) {
                 if (/pengeluaran|expense|gas|lpg|belanja|biaya/i.test(line)) {
                     const nums = line.match(/[\d.,]+/g);
@@ -986,7 +1016,7 @@
                         if (num > 0) {
                             let desc = line.replace(/[\d.,]+/g, '').replace(/[:*\-]/g, '').trim();
                             if (desc.length < 3) desc = 'Pengeluaran';
-                            result.expenses.push({ desc: desc, amount: num });
+                            result.expenses.push({ desc, amount: num });
                         }
                     }
                 }
@@ -1003,44 +1033,35 @@
         }
 
         // ============================================================
-        // FILL SHIFT DATA FROM PARSED
+        // FILL SHIFT DATA
         // ============================================================
         function fillShiftData(shift, parsed) {
             if (parsed.sales > 0) setVal(`s${shift}_sales`, parsed.sales);
             if (parsed.cu > 0) setVal(`s${shift}_cu`, parsed.cu);
 
-            // Menu
             const menuContainer = document.getElementById(`menu${shift}Container`);
             menuContainer.innerHTML = '';
             dynamicCounter[`menu${shift}`] = 0;
             if (parsed.menu && parsed.menu.length > 0) {
-                parsed.menu.forEach(item => {
-                    addDynamicItem(`menu${shift}`, item.label, item.qty);
-                });
+                parsed.menu.forEach(item => addDynamicItem(`menu${shift}`, item.label, item.qty));
             } else {
                 addDynamicItem(`menu${shift}`);
             }
 
-            // E-commerce
             const ecomContainer = document.getElementById(`ecom${shift}Container`);
             ecomContainer.innerHTML = '';
             dynamicCounter[`ecom${shift}`] = 0;
             if (parsed.ecom && parsed.ecom.length > 0) {
-                parsed.ecom.forEach(item => {
-                    addDynamicItem(`ecom${shift}`, item.label, item.amount);
-                });
+                parsed.ecom.forEach(item => addDynamicItem(`ecom${shift}`, item.label, item.amount));
             } else {
                 addDynamicItem(`ecom${shift}`);
             }
 
-            // Expenses
             const expContainer = document.getElementById(`expenses${shift}Container`);
             expContainer.innerHTML = '';
             expenseCounter[shift] = 0;
             if (parsed.expenses && parsed.expenses.length > 0) {
-                parsed.expenses.forEach(item => {
-                    addExpense(shift, item.desc, item.amount);
-                });
+                parsed.expenses.forEach(item => addExpense(shift, item.desc, item.amount));
             } else {
                 addExpense(shift);
             }
@@ -1050,10 +1071,8 @@
         // DYNAMIC ITEMS (Menu & E-Commerce)
         // ============================================================
         function addDynamicItem(type, label = '', value = 0) {
-            // type: menu1, menu2, ecom1, ecom2
             const container = document.getElementById(`${type}Container`);
             if (!container) return;
-
             const counter = dynamicCounter[type] || 0;
             dynamicCounter[type] = counter + 1;
             const idx = dynamicCounter[type];
@@ -1124,9 +1143,7 @@
                 addDynamicItem(type);
                 return;
             }
-            data.forEach(item => {
-                addDynamicItem(type, item.label, item.value);
-            });
+            data.forEach(item => addDynamicItem(type, item.label, item.value));
         }
 
         // ============================================================
@@ -1185,9 +1202,7 @@
                 addExpense(shift);
                 return;
             }
-            data.forEach(item => {
-                addExpense(shift, item.desc, item.amount);
-            });
+            data.forEach(item => addExpense(shift, item.desc, item.amount));
         }
 
         // ============================================================
@@ -1279,26 +1294,21 @@
             const avgCu = dayOfMonth > 0 ? totalCuBulanan / dayOfMonth : 0;
             const estimasiSelesBulanan = avgOmset * daysInMonth;
 
-            // Build menu lines
+            // Menu lines
             const menuMap = {};
             combined.menu.forEach(item => {
                 const key = item.label.trim().toLowerCase();
-                if (menuMap[key]) {
-                    menuMap[key] += item.value;
-                } else {
-                    menuMap[key] = item.value;
-                }
+                if (menuMap[key]) menuMap[key] += item.value;
+                else menuMap[key] = item.value;
             });
             const menuLines = Object.entries(menuMap)
                 .map(([label, qty]) => `»${label.padEnd(28)} : ${qty}`)
                 .join('\n');
 
-            // Ecom lines
             const ecomLines = combined.ecom.map(item =>
                 `${item.label.padEnd(18)}: Rp. ${formatNumber(item.value)}`
             ).join('\n');
 
-            // Expenses
             const expenseLines = combined.expenses.map(e =>
                 `- ${e.desc} : Rp. ${formatNumber(e.amount)}`
             ).join('\n');
@@ -1597,4 +1607,4 @@
     </script>
 
 </body>
-  </html>
+</html>
