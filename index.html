@@ -19,7 +19,7 @@
             color: #1e1e2a;
         }
         .app-container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
         }
         .app-header {
@@ -87,7 +87,6 @@
             margin-bottom: 4px;
         }
         .form-group input,
-        .form-group select,
         .form-group textarea {
             width: 100%;
             padding: 10px 12px;
@@ -133,29 +132,62 @@
             border-top: 2px dashed #e8e2da;
             margin: 18px 0 16px;
         }
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
         .upload-area {
             border: 2px dashed #ddd8d1;
             border-radius: 16px;
-            padding: 16px;
+            padding: 12px;
             text-align: center;
             background: #faf8f6;
             cursor: pointer;
             transition: 0.2s;
-            margin-bottom: 12px;
         }
         .upload-area:hover {
             border-color: #e85d3a;
             background: #fff5f0;
         }
-        .upload-area img {
-            max-width: 100%;
-            max-height: 180px;
-            border-radius: 12px;
-            margin-top: 8px;
-        }
-        .upload-area .file-label {
+        .upload-area .label {
             font-weight: 600;
             color: #e85d3a;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        .upload-area .label.shift2-label {
+            color: #2a6f97;
+        }
+        .upload-area img {
+            max-width: 100%;
+            max-height: 120px;
+            border-radius: 8px;
+            margin-top: 6px;
+        }
+        .upload-area input[type="file"] {
+            display: none;
+        }
+        .upload-area .status {
+            font-size: 13px;
+            color: #6b6b7a;
+            margin-top: 4px;
+        }
+        .upload-area .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ddd;
+            border-top-color: #e85d3a;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 4px;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
         .btn {
             display: inline-flex;
@@ -193,15 +225,6 @@
         .btn-success:hover {
             background: #21867a;
         }
-        .btn-outline {
-            background: transparent;
-            border: 2px solid #e85d3a;
-            color: #e85d3a;
-        }
-        .btn-outline:hover {
-            background: #e85d3a;
-            color: #fff;
-        }
         .btn-sm {
             padding: 6px 16px;
             font-size: 13px;
@@ -211,13 +234,6 @@
             flex-wrap: wrap;
             gap: 10px;
             margin-top: 12px;
-        }
-        .btn-danger {
-            background: #c0392b;
-            color: #fff;
-        }
-        .btn-danger:hover {
-            background: #a93226;
         }
         .report-preview {
             background: #fcf9f6;
@@ -242,7 +258,6 @@
             align-items: center;
             padding: 10px 14px;
             border-bottom: 1px solid #eeeae5;
-            cursor: pointer;
             border-radius: 10px;
         }
         .history-item:hover {
@@ -282,24 +297,6 @@
             color: #9a8f84;
             font-size: 15px;
         }
-        .tag {
-            display: inline-block;
-            background: #e8e2da;
-            padding: 0 14px;
-            border-radius: 40px;
-            font-size: 12px;
-            font-weight: 600;
-            line-height: 26px;
-            color: #3d3d4a;
-        }
-        .tag.shift1 {
-            background: #e85d3a;
-            color: #fff;
-        }
-        .tag.shift2 {
-            background: #2a6f97;
-            color: #fff;
-        }
         .toast {
             position: fixed;
             bottom: 24px;
@@ -334,41 +331,6 @@
             flex-wrap: wrap;
             gap: 8px;
         }
-        .mt-8 {
-            margin-top: 8px;
-        }
-        .mt-12 {
-            margin-top: 12px;
-        }
-        .mt-16 {
-            margin-top: 16px;
-        }
-        .text-center {
-            text-align: center;
-        }
-        .ocr-status {
-            font-size: 14px;
-            color: #6b6b7a;
-            margin-top: 6px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            justify-content: center;
-        }
-        .ocr-status .spinner {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #ddd;
-            border-top-color: #e85d3a;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
         .dynamic-item {
             display: flex;
             align-items: center;
@@ -379,12 +341,6 @@
             border: 1px solid #e8e2da;
             margin-bottom: 6px;
             flex-wrap: wrap;
-        }
-        .dynamic-item label {
-            font-size: 13px;
-            font-weight: 500;
-            flex: 1;
-            min-width: 100px;
         }
         .dynamic-item input {
             width: 80px;
@@ -449,43 +405,9 @@
             background: #e85d3a;
             color: #fff;
         }
-        .shift-toggle {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 14px;
-        }
-        .shift-toggle button {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid #ddd8d1;
-            border-radius: 40px;
-            background: #faf8f6;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            transition: 0.2s;
-            color: #3d3d4a;
-        }
-        .shift-toggle button.active {
-            border-color: #e85d3a;
-            background: #fff5f0;
-            color: #e85d3a;
-        }
-        .shift-toggle button.active.shift2-active {
-            border-color: #2a6f97;
-            background: #eef6fa;
-            color: #2a6f97;
-        }
-        .shift-panel {
-            display: none;
-        }
-        .shift-panel.active {
-            display: block;
-        }
-        @media (max-width: 600px) {
-            .form-group {
-                flex: 1 1 100%;
-                min-width: 0;
+        @media (max-width: 700px) {
+            .upload-grid {
+                grid-template-columns: 1fr;
             }
             .dynamic-item {
                 flex-wrap: wrap;
@@ -513,7 +435,7 @@
         <!-- HEADER -->
         <header class="app-header">
             <h1>🐓 <span>GEPREK</span>INAJA</h1>
-            <div class="sub">OCR Laporan Sales • Shift 1 + Shift 2</div>
+            <div class="sub">OCR Laporan Sales • 4 Foto (2 per Shift)</div>
         </header>
 
         <!-- DATE -->
@@ -534,118 +456,88 @@
             </div>
         </div>
 
-        <!-- SHIFT TOGGLE -->
+        <!-- UPLOAD 4 FOTO -->
         <div class="card">
-            <div class="shift-toggle">
-                <button id="shift1Tab" class="active">🟠 Shift 1 (Struk Atas)</button>
-                <button id="shift2Tab" class="shift2-active">🔵 Shift 2 (Struk Bawah)</button>
+            <div class="card-title">📸 Upload 4 Foto Struk</div>
+            <div class="upload-grid">
+                <!-- S1-1 -->
+                <div class="upload-area" id="uploadS1_1Area">
+                    <span class="label">🟠 S1 - Foto 1 (atas)</span>
+                    <input type="file" id="uploadS1_1" accept="image/*" />
+                    <img id="previewS1_1" style="display:none;" alt="Preview" />
+                    <div class="status" id="statusS1_1">Belum ada</div>
+                    <div class="spinner" id="spinnerS1_1"></div>
+                </div>
+                <!-- S1-2 -->
+                <div class="upload-area" id="uploadS1_2Area">
+                    <span class="label">🟠 S1 - Foto 2 (bawah)</span>
+                    <input type="file" id="uploadS1_2" accept="image/*" />
+                    <img id="previewS1_2" style="display:none;" alt="Preview" />
+                    <div class="status" id="statusS1_2">Belum ada</div>
+                    <div class="spinner" id="spinnerS1_2"></div>
+                </div>
+                <!-- S2-1 -->
+                <div class="upload-area" id="uploadS2_1Area">
+                    <span class="label shift2-label">🔵 S2 - Foto 1 (atas)</span>
+                    <input type="file" id="uploadS2_1" accept="image/*" />
+                    <img id="previewS2_1" style="display:none;" alt="Preview" />
+                    <div class="status" id="statusS2_1">Belum ada</div>
+                    <div class="spinner" id="spinnerS2_1"></div>
+                </div>
+                <!-- S2-2 -->
+                <div class="upload-area" id="uploadS2_2Area">
+                    <span class="label shift2-label">🔵 S2 - Foto 2 (bawah)</span>
+                    <input type="file" id="uploadS2_2" accept="image/*" />
+                    <img id="previewS2_2" style="display:none;" alt="Preview" />
+                    <div class="status" id="statusS2_2">Belum ada</div>
+                    <div class="spinner" id="spinnerS2_2"></div>
+                </div>
             </div>
 
-            <!-- SHIFT 1 -->
-            <div id="shift1Panel" class="shift-panel active">
-                <div class="card-title">
-                    <span class="badge shift1">SHIFT 1</span>
-                    <span style="font-size:14px;font-weight:400;color:#6b6b7a;">upload foto struk bagian atas</span>
-                </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="runOCRAll()">🔍 Ekstrak & Gabung Semua</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('uploadS1_1').click()">📂 S1-1</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('uploadS1_2').click()">📂 S1-2</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('uploadS2_1').click()">📂 S2-1</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('uploadS2_2').click()">📂 S2-2</button>
+            </div>
+            <div style="font-size:13px;color:#6b6b7a;margin-top:8px;">
+                ⚡ OCR semua foto bisa memakan waktu 1-2 menit. Tunggu hingga selesai.
+            </div>
+        </div>
 
-                <!-- Upload OCR -->
-                <div class="upload-area" id="upload1Area">
-                    <span class="file-label">📤 Klik untuk upload foto struk Shift 1</span>
-                    <input type="file" id="upload1" accept="image/*" style="display:none;" />
-                    <br />
-                    <img id="preview1" style="display:none;" alt="Preview Struk 1" />
-                    <div class="ocr-status" id="ocrStatus1">
-                        <span class="spinner" id="spinner1"></span>
-                        <span id="statusText1">Belum ada gambar</span>
-                    </div>
-                </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-primary btn-sm" onclick="runOCR('1')">🔍 Ekstrak Data Shift 1</button>
-                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('upload1').click()">📂 Pilih Gambar</button>
-                </div>
-
-                <hr class="form-divider" />
-
-                <!-- Hasil OCR / Manual -->
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>💰 Penjualan Bersih (S1)</label>
-                        <div class="input-rupiah">
-                            <span class="rp">Rp</span>
-                            <input type="number" id="s1_sales" step="1" placeholder="0" />
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>🧑‍🤝‍🧑 CU / Total Pax (S1)</label>
-                        <input type="number" id="s1_cu" step="1" placeholder="0" />
-                    </div>
-                </div>
-
-                <div style="font-weight:600;font-size:15px;margin:12px 0 8px;">🍱 Menu Terjual (S1) — <span style="font-weight:400;font-size:13px;color:#6b6b7a;">otomatis dari OCR, bisa diedit</span></div>
-                <div id="menu1Container"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addDynamicItem('menu1')" style="margin-top:6px;">+ Tambah Menu</button>
-
-                <div style="font-weight:600;font-size:15px;margin:16px 0 8px;">📱 E-Commerce (S1) — total nominal</div>
-                <div id="ecom1Container"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addDynamicItem('ecom1')" style="margin-top:6px;">+ Tambah E-Commerce</button>
-
-                <div style="font-weight:600;font-size:15px;margin:16px 0 8px;">📤 Pengeluaran (S1)</div>
-                <div id="expenses1Container"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addExpense('1')" style="margin-top:6px;">+ Tambah Pengeluaran</button>
+        <!-- HASIL GABUNGAN -->
+        <div class="card">
+            <div class="card-title">
+                <span class="badge">📊 Data Gabungan Akhir</span>
+                <span style="font-size:14px;font-weight:400;color:#6b6b7a;">(S1 + S2, bisa diedit manual)</span>
             </div>
 
-            <!-- SHIFT 2 -->
-            <div id="shift2Panel" class="shift-panel">
-                <div class="card-title">
-                    <span class="badge shift2">SHIFT 2</span>
-                    <span style="font-size:14px;font-weight:400;color:#6b6b7a;">upload foto struk bagian bawah</span>
-                </div>
-
-                <div class="upload-area" id="upload2Area">
-                    <span class="file-label">📤 Klik untuk upload foto struk Shift 2</span>
-                    <input type="file" id="upload2" accept="image/*" style="display:none;" />
-                    <br />
-                    <img id="preview2" style="display:none;" alt="Preview Struk 2" />
-                    <div class="ocr-status" id="ocrStatus2">
-                        <span class="spinner" id="spinner2"></span>
-                        <span id="statusText2">Belum ada gambar</span>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>💰 Total Penjualan Bersih</label>
+                    <div class="input-rupiah">
+                        <span class="rp">Rp</span>
+                        <input type="number" id="totalSales" step="1" placeholder="0" />
                     </div>
                 </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-primary btn-sm" onclick="runOCR('2')">🔍 Ekstrak Data Shift 2</button>
-                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('upload2').click()">📂 Pilih Gambar</button>
+                <div class="form-group">
+                    <label>🧑‍🤝‍🧑 Total CU / Pax</label>
+                    <input type="number" id="totalCu" step="1" placeholder="0" />
                 </div>
-
-                <hr class="form-divider" />
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>💰 Penjualan Bersih (S2)</label>
-                        <div class="input-rupiah">
-                            <span class="rp">Rp</span>
-                            <input type="number" id="s2_sales" step="1" placeholder="0" />
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>🧑‍🤝‍🧑 CU / Total Pax (S2)</label>
-                        <input type="number" id="s2_cu" step="1" placeholder="0" />
-                    </div>
-                </div>
-
-                <div style="font-weight:600;font-size:15px;margin:12px 0 8px;">🍱 Menu Terjual (S2) — <span style="font-weight:400;font-size:13px;color:#6b6b7a;">otomatis dari OCR, bisa diedit</span></div>
-                <div id="menu2Container"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addDynamicItem('menu2')" style="margin-top:6px;">+ Tambah Menu</button>
-
-                <div style="font-weight:600;font-size:15px;margin:16px 0 8px;">📱 E-Commerce (S2) — total nominal</div>
-                <div id="ecom2Container"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addDynamicItem('ecom2')" style="margin-top:6px;">+ Tambah E-Commerce</button>
-
-                <div style="font-weight:600;font-size:15px;margin:16px 0 8px;">📤 Pengeluaran (S2)</div>
-                <div id="expenses2Container"></div>
-                <button class="btn btn-secondary btn-sm" onclick="addExpense('2')" style="margin-top:6px;">+ Tambah Pengeluaran</button>
             </div>
+
+            <div style="font-weight:600;font-size:15px;margin:12px 0 8px;">🍱 Menu Terjual (gabungan)</div>
+            <div id="menuContainer"></div>
+            <button class="btn btn-secondary btn-sm" onclick="addDynamicItem('menu')" style="margin-top:6px;">+ Tambah Menu</button>
+
+            <div style="font-weight:600;font-size:15px;margin:16px 0 8px;">📱 E-Commerce (gabungan) — total nominal</div>
+            <div id="ecomContainer"></div>
+            <button class="btn btn-secondary btn-sm" onclick="addDynamicItem('ecom')" style="margin-top:6px;">+ Tambah E-Commerce</button>
+
+            <div style="font-weight:600;font-size:15px;margin:16px 0 8px;">📤 Pengeluaran (gabungan)</div>
+            <div id="expensesContainer"></div>
+            <button class="btn btn-secondary btn-sm" onclick="addExpense()" style="margin-top:6px;">+ Tambah Pengeluaran</button>
         </div>
 
         <!-- TEAM / WEATHER / WASTE -->
@@ -686,7 +578,7 @@
                 <button class="btn btn-secondary btn-sm" onclick="copyReport()">📋 Salin</button>
             </div>
             <div id="reportOutput" class="report-preview" style="margin-top:12px;">
-                <span class="dim">Belum ada laporan. Ekstrak data dari struk lalu klik Generate.</span>
+                <span class="dim">Belum ada laporan. Upload 4 foto, ekstrak, lalu Generate.</span>
             </div>
         </div>
 
@@ -708,14 +600,16 @@
         // GLOBAL STATE
         // ============================================================
         const STORAGE_KEY = 'geprek_reports';
-        let expenseCounter = { 1: 0, 2: 0 };
-        let dynamicCounter = { menu1: 0, menu2: 0, ecom1: 0, ecom2: 0 };
+        let dynamicCounter = { menu: 0, ecom: 0 };
+        let expenseCounter = 0;
+
+        // Mapping upload areas
+        const uploadIds = ['S1_1', 'S1_2', 'S2_1', 'S2_2'];
 
         // ============================================================
         // INIT
         // ============================================================
         document.addEventListener('DOMContentLoaded', () => {
-            // Set date default
             const today = new Date();
             const y = today.getFullYear();
             const m = String(today.getMonth() + 1).padStart(2, '0');
@@ -723,24 +617,15 @@
             document.getElementById('reportDate').value = `${y}-${m}-${d}`;
             updateDateMeta();
 
-            // Upload handlers
-            setupUpload('1');
-            setupUpload('2');
+            // Setup upload areas
+            uploadIds.forEach(id => setupUpload(id));
 
-            // Shift toggle
-            document.getElementById('shift1Tab').addEventListener('click', () => setActiveShift('1'));
-            document.getElementById('shift2Tab').addEventListener('click', () => setActiveShift('2'));
-
-            // Date change
             document.getElementById('reportDate').addEventListener('change', updateDateMeta);
 
-            // Init dynamic containers with default empty items
-            addDynamicItem('menu1');
-            addDynamicItem('menu2');
-            addDynamicItem('ecom1');
-            addDynamicItem('ecom2');
-            addExpense('1');
-            addExpense('2');
+            // Init dynamic items
+            addDynamicItem('menu');
+            addDynamicItem('ecom');
+            addExpense();
 
             loadToday();
             loadHistory();
@@ -768,34 +653,13 @@
         function getDaysInMonth() { return parseInt(document.getElementById('daysInMonth').value) || 30; }
 
         // ============================================================
-        // SHIFT TOGGLE
+        // UPLOAD SETUP
         // ============================================================
-        function setActiveShift(shift) {
-            const tab1 = document.getElementById('shift1Tab');
-            const tab2 = document.getElementById('shift2Tab');
-            const panel1 = document.getElementById('shift1Panel');
-            const panel2 = document.getElementById('shift2Panel');
-            if (shift === '1') {
-                tab1.classList.add('active');
-                tab1.classList.remove('shift2-active');
-                tab2.classList.remove('active', 'shift2-active');
-                panel1.classList.add('active');
-                panel2.classList.remove('active');
-            } else {
-                tab2.classList.add('active', 'shift2-active');
-                tab1.classList.remove('active');
-                panel2.classList.add('active');
-                panel1.classList.remove('active');
-            }
-        }
-
-        // ============================================================
-        // UPLOAD & OCR (dengan optimasi resize + fast mode)
-        // ============================================================
-        function setupUpload(shift) {
-            const fileInput = document.getElementById(`upload${shift}`);
-            const area = document.getElementById(`upload${shift}Area`);
-            const preview = document.getElementById(`preview${shift}`);
+        function setupUpload(id) {
+            const fileInput = document.getElementById(`upload${id}`);
+            const area = document.getElementById(`upload${id}Area`);
+            const preview = document.getElementById(`preview${id}`);
+            const status = document.getElementById(`status${id}`);
 
             area.addEventListener('click', () => fileInput.click());
 
@@ -806,63 +670,15 @@
                 reader.onload = (ev) => {
                     preview.src = ev.target.result;
                     preview.style.display = 'block';
-                    document.getElementById(`statusText${shift}`).textContent = '📸 Gambar siap, klik Ekstrak Data';
+                    status.textContent = '📸 Siap';
                 };
                 reader.readAsDataURL(file);
             });
         }
 
-        async function runOCR(shift) {
-            const fileInput = document.getElementById(`upload${shift}`);
-            const statusText = document.getElementById(`statusText${shift}`);
-            const spinner = document.getElementById(`spinner${shift}`);
-
-            if (!fileInput.files || !fileInput.files[0]) {
-                showToast('Pilih foto struk terlebih dahulu!', 'error');
-                return;
-            }
-
-            // Tampilkan loading
-            spinner.style.display = 'inline-block';
-            statusText.textContent = '⏳ Mempersiapkan gambar...';
-
-            try {
-                // 1. Resize gambar untuk mempercepat OCR
-                const imageFile = fileInput.files[0];
-                const resizedBlob = await resizeImage(imageFile, 1200);
-                statusText.textContent = '⏳ OCR sedang berjalan (mungkin 10-30 detik)...';
-
-                // 2. OCR dengan mode cepat (psm: 6 = blok teks seragam)
-                const result = await Tesseract.recognize(resizedBlob, 'ind', {
-                    logger: (m) => {
-                        if (m.status === 'recognizing text') {
-                            const progress = Math.round(m.progress * 100);
-                            statusText.textContent = `⏳ OCR: ${progress}%`;
-                        }
-                    },
-                    psm: 6, // Anggap satu blok teks
-                    // opsi lain: psm: 3 (default), psm: 7 (satu baris)
-                });
-
-                const text = result.data.text;
-                statusText.textContent = `✅ OCR selesai (${text.length} karakter)`;
-                console.log(`OCR Shift ${shift}:`, text);
-
-                // 3. Parse hasil OCR
-                const parsed = parseOCRText(text);
-                fillShiftData(shift, parsed);
-
-                showToast(`✅ Data Shift ${shift} berhasil diekstrak`, 'success');
-            } catch (err) {
-                console.error(err);
-                statusText.textContent = '❌ Gagal OCR, coba lagi atau input manual';
-                showToast('❌ Gagal membaca gambar, coba foto yang lebih jelas', 'error');
-            } finally {
-                spinner.style.display = 'none';
-            }
-        }
-
-        // Fungsi resize gambar
+        // ============================================================
+        // RESIZE GAMBAR
+        // ============================================================
         function resizeImage(file, maxWidth) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -877,7 +693,7 @@
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                         canvas.toBlob((blob) => {
                             if (blob) resolve(blob);
-                            else reject(new Error('Gagal resize gambar'));
+                            else reject(new Error('Gagal resize'));
                         }, 'image/jpeg', 0.85);
                     };
                     img.onerror = reject;
@@ -889,12 +705,84 @@
         }
 
         // ============================================================
-        // PARSING OCR (sama seperti sebelumnya)
+        // OCR ALL 4 FOTO
+        // ============================================================
+        async function runOCRAll() {
+            // Cek semua file
+            const files = uploadIds.map(id => document.getElementById(`upload${id}`).files[0]);
+            if (files.some(f => !f)) {
+                showToast('Upload semua 4 foto terlebih dahulu!', 'error');
+                return;
+            }
+
+            // Tampilkan spinner semua
+            uploadIds.forEach(id => {
+                document.getElementById(`spinner${id}`).style.display = 'block';
+                document.getElementById(`status${id}`).textContent = '⏳ Memproses...';
+            });
+
+            try {
+                // Resize & OCR paralel per foto
+                const ocrPromises = uploadIds.map(async (id, idx) => {
+                    const file = files[idx];
+                    const resized = await resizeImage(file, 1200);
+                    const result = await Tesseract.recognize(resized, 'ind', {
+                        logger: (m) => {
+                            if (m.status === 'recognizing text') {
+                                document.getElementById(`status${id}`).textContent =
+                                    `⏳ OCR: ${Math.round(m.progress * 100)}%`;
+                            }
+                        },
+                        psm: 6
+                    });
+                    document.getElementById(`status${id}`).textContent =
+                        `✅ ${result.data.text.length} karakter`;
+                    document.getElementById(`spinner${id}`).style.display = 'none';
+                    return { id, text: result.data.text };
+                });
+
+                const results = await Promise.all(ocrPromises);
+
+                // Gabungkan teks per shift
+                const s1Text = results.filter(r => r.id.startsWith('S1')).map(r => r.text).join('\n');
+                const s2Text = results.filter(r => r.id.startsWith('S2')).map(r => r.text).join('\n');
+
+                console.log('S1 OCR:', s1Text);
+                console.log('S2 OCR:', s2Text);
+
+                // Parsing per shift
+                const parsedS1 = parseOCRText(s1Text);
+                const parsedS2 = parseOCRText(s2Text);
+
+                // Gabungkan hasil kedua shift
+                const combined = {
+                    sales: (parsedS1.sales || 0) + (parsedS2.sales || 0),
+                    cu: (parsedS1.cu || 0) + (parsedS2.cu || 0),
+                    menu: [...(parsedS1.menu || []), ...(parsedS2.menu || [])],
+                    ecom: [...(parsedS1.ecom || []), ...(parsedS2.ecom || [])],
+                    expenses: [...(parsedS1.expenses || []), ...(parsedS2.expenses || [])],
+                };
+
+                fillCombinedData(combined);
+
+                showToast('✅ Semua data berhasil diekstrak dan digabung!', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('❌ Gagal OCR, coba foto lebih jelas atau input manual', 'error');
+                uploadIds.forEach(id => {
+                    document.getElementById(`spinner${id}`).style.display = 'none';
+                    if (document.getElementById(`status${id}`).textContent.includes('⏳')) {
+                        document.getElementById(`status${id}`).textContent = '❌ Gagal';
+                    }
+                });
+            }
+        }
+
+        // ============================================================
+        // PARSING OCR (sama seperti sebelumnya, lebih fleksibel)
         // ============================================================
         function parseOCRText(text) {
-            const clean = text.replace(/\s+/g, ' ').trim();
-            const lines = clean.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
             const result = {
                 sales: 0,
                 cu: 0,
@@ -903,7 +791,7 @@
                 expenses: [],
             };
 
-            // 1. Sales
+            // --- 1. Sales ---
             let salesFound = false;
             for (let line of lines) {
                 const match = line.match(/(?:Rp|RP|rp|R P)\s*[.:]?\s*([\d.,]+)/);
@@ -928,8 +816,21 @@
                     }
                 }
             }
+            if (!salesFound) {
+                let maxNum = 0;
+                for (let line of lines) {
+                    const nums = line.match(/\b(\d{1,3}(?:\.\d{3})*|\d+)\b/g);
+                    if (nums) {
+                        for (let n of nums) {
+                            const num = parseNumber(n);
+                            if (num > maxNum && num < 100000000) maxNum = num;
+                        }
+                    }
+                }
+                if (maxNum > 0) result.sales = maxNum;
+            }
 
-            // 2. CU
+            // --- 2. CU ---
             for (let line of lines) {
                 if (/pax|cu|customer/i.test(line)) {
                     const nums = line.match(/[\d.,]+/g);
@@ -955,9 +856,9 @@
                 }
             }
 
-            // 3. Menu
+            // --- 3. Menu ---
             const menuKeywords = ['geprek', 'jumbo', 'hemat', 'double', 'chic', 'saos', 'gangnam', 'minerale', 'pucuk', 'sijo',
-                'promo', 'extra'
+                'promo', 'extra', 'ayam', 'nasi', 'telor', 'sambal'
             ];
             for (let line of lines) {
                 const lower = line.toLowerCase();
@@ -987,8 +888,10 @@
                 }
             }
 
-            // 4. E-commerce
-            const ecomKeywords = ['dana', 'transfer', 'shopee', 'gofood', 'qris', 'qpon', 'tiktok', 'e-commerce', 'ecom'];
+            // --- 4. E-commerce ---
+            const ecomKeywords = ['dana', 'transfer', 'shopee', 'gofood', 'qris', 'qpon', 'tiktok', 'e-commerce', 'ecom',
+                'ovo', 'linkaja'
+            ];
             for (let line of lines) {
                 const lower = line.toLowerCase();
                 let matched = false;
@@ -1007,9 +910,9 @@
                 }
             }
 
-            // 5. Expenses
+            // --- 5. Expenses ---
             for (let line of lines) {
-                if (/pengeluaran|expense|gas|lpg|belanja|biaya/i.test(line)) {
+                if (/pengeluaran|expense|gas|lpg|belanja|biaya|makan|minum/i.test(line)) {
                     const nums = line.match(/[\d.,]+/g);
                     if (nums) {
                         const num = parseNumber(nums[nums.length - 1]);
@@ -1033,37 +936,40 @@
         }
 
         // ============================================================
-        // FILL SHIFT DATA
+        // FILL COMBINED DATA
         // ============================================================
-        function fillShiftData(shift, parsed) {
-            if (parsed.sales > 0) setVal(`s${shift}_sales`, parsed.sales);
-            if (parsed.cu > 0) setVal(`s${shift}_cu`, parsed.cu);
+        function fillCombinedData(parsed) {
+            if (parsed.sales > 0) setVal('totalSales', parsed.sales);
+            if (parsed.cu > 0) setVal('totalCu', parsed.cu);
 
-            const menuContainer = document.getElementById(`menu${shift}Container`);
+            // Menu
+            const menuContainer = document.getElementById('menuContainer');
             menuContainer.innerHTML = '';
-            dynamicCounter[`menu${shift}`] = 0;
+            dynamicCounter.menu = 0;
             if (parsed.menu && parsed.menu.length > 0) {
-                parsed.menu.forEach(item => addDynamicItem(`menu${shift}`, item.label, item.qty));
+                parsed.menu.forEach(item => addDynamicItem('menu', item.label, item.qty));
             } else {
-                addDynamicItem(`menu${shift}`);
+                addDynamicItem('menu');
             }
 
-            const ecomContainer = document.getElementById(`ecom${shift}Container`);
+            // Ecom
+            const ecomContainer = document.getElementById('ecomContainer');
             ecomContainer.innerHTML = '';
-            dynamicCounter[`ecom${shift}`] = 0;
+            dynamicCounter.ecom = 0;
             if (parsed.ecom && parsed.ecom.length > 0) {
-                parsed.ecom.forEach(item => addDynamicItem(`ecom${shift}`, item.label, item.amount));
+                parsed.ecom.forEach(item => addDynamicItem('ecom', item.label, item.amount));
             } else {
-                addDynamicItem(`ecom${shift}`);
+                addDynamicItem('ecom');
             }
 
-            const expContainer = document.getElementById(`expenses${shift}Container`);
+            // Expenses
+            const expContainer = document.getElementById('expensesContainer');
             expContainer.innerHTML = '';
-            expenseCounter[shift] = 0;
+            expenseCounter = 0;
             if (parsed.expenses && parsed.expenses.length > 0) {
-                parsed.expenses.forEach(item => addExpense(shift, item.desc, item.amount));
+                parsed.expenses.forEach(item => addExpense(item.desc, item.amount));
             } else {
-                addExpense(shift);
+                addExpense();
             }
         }
 
@@ -1076,14 +982,11 @@
             const counter = dynamicCounter[type] || 0;
             dynamicCounter[type] = counter + 1;
             const idx = dynamicCounter[type];
-            const isMenu = type.startsWith('menu');
-            const isEcom = type.startsWith('ecom');
-            const shift = type.slice(-1);
-            const id = `${type}_${idx}`;
+            const isMenu = type === 'menu';
 
             const div = document.createElement('div');
             div.className = 'dynamic-item';
-            div.id = id;
+            div.id = `${type}_${idx}`;
 
             const labelInput = document.createElement('input');
             labelInput.type = 'text';
@@ -1149,35 +1052,35 @@
         // ============================================================
         // EXPENSES
         // ============================================================
-        function addExpense(shift, desc = '', amount = 0) {
-            const container = document.getElementById(`expenses${shift}Container`);
+        function addExpense(desc = '', amount = 0) {
+            const container = document.getElementById('expensesContainer');
             if (!container) return;
-            expenseCounter[shift] = (expenseCounter[shift] || 0) + 1;
-            const idx = expenseCounter[shift];
+            expenseCounter += 1;
+            const idx = expenseCounter;
             const row = document.createElement('div');
             row.className = 'expense-row';
-            row.id = `exp_${shift}_${idx}`;
+            row.id = `exp_${idx}`;
             row.innerHTML = `
                 <div class="form-group">
                     <label>Jenis</label>
-                    <input type="text" id="exp_desc_${shift}_${idx}" value="${escapeHtml(desc)}" placeholder="misal: GAS LPG" />
+                    <input type="text" id="exp_desc_${idx}" value="${escapeHtml(desc)}" placeholder="misal: GAS LPG" />
                 </div>
                 <div class="form-group">
                     <label>Jumlah (Rp)</label>
-                    <input type="number" id="exp_amount_${shift}_${idx}" value="${amount || 0}" min="0" step="1" />
+                    <input type="number" id="exp_amount_${idx}" value="${amount || 0}" min="0" step="1" />
                 </div>
-                <button class="btn-remove-exp" onclick="removeExpense('${shift}', ${idx})">✕ Hapus</button>
+                <button class="btn-remove-exp" onclick="removeExpense(${idx})">✕ Hapus</button>
             `;
             container.appendChild(row);
         }
 
-        function removeExpense(shift, idx) {
-            const el = document.getElementById(`exp_${shift}_${idx}`);
+        function removeExpense(idx) {
+            const el = document.getElementById(`exp_${idx}`);
             if (el) el.remove();
         }
 
-        function getExpenses(shift) {
-            const container = document.getElementById(`expenses${shift}Container`);
+        function getExpenses() {
+            const container = document.getElementById('expensesContainer');
             const rows = container.querySelectorAll('.expense-row');
             const result = [];
             rows.forEach(row => {
@@ -1194,15 +1097,15 @@
             return result;
         }
 
-        function setExpenses(shift, data) {
-            const container = document.getElementById(`expenses${shift}Container`);
+        function setExpenses(data) {
+            const container = document.getElementById('expensesContainer');
             container.innerHTML = '';
-            expenseCounter[shift] = 0;
+            expenseCounter = 0;
             if (!data || data.length === 0) {
-                addExpense(shift);
+                addExpense();
                 return;
             }
-            data.forEach(item => addExpense(shift, item.desc, item.amount));
+            data.forEach(item => addExpense(item.desc, item.amount));
         }
 
         // ============================================================
@@ -1232,51 +1135,33 @@
             return el ? el.value.trim() : '';
         }
 
-        function getShiftData(shift) {
-            const menuItems = getDynamicItems(`menu${shift}`);
-            const ecomItems = getDynamicItems(`ecom${shift}`);
+        function getCombinedData() {
             return {
-                sales: getValInt(`s${shift}_sales`),
-                cu: getValInt(`s${shift}_cu`),
-                menu: menuItems,
-                ecom: ecomItems,
-                expenses: getExpenses(shift),
+                sales: getValInt('totalSales'),
+                cu: getValInt('totalCu'),
+                menu: getDynamicItems('menu'),
+                ecom: getDynamicItems('ecom'),
+                expenses: getExpenses(),
             };
         }
 
-        function setShiftData(shift, data) {
+        function setCombinedData(data) {
             if (!data) return;
-            setVal(`s${shift}_sales`, data.sales || 0);
-            setVal(`s${shift}_cu`, data.cu || 0);
-            setDynamicItems(`menu${shift}`, data.menu || []);
-            setDynamicItems(`ecom${shift}`, data.ecom || []);
-            setExpenses(shift, data.expenses || []);
-        }
-
-        // ============================================================
-        // COMBINE SHIFTS
-        // ============================================================
-        function combineShifts(s1, s2) {
-            const totalSales = (s1.sales || 0) + (s2.sales || 0);
-            const totalCu = (s1.cu || 0) + (s2.cu || 0);
-            const avg = totalCu > 0 ? totalSales / totalCu : 0;
-
-            const menuCombined = [...(s1.menu || []), ...(s2.menu || [])];
-            const ecomCombined = [...(s1.ecom || []), ...(s2.ecom || [])];
-            const expensesCombined = [...(s1.expenses || []), ...(s2.expenses || [])];
-            const totalExpenses = expensesCombined.reduce((sum, e) => sum + (e.amount || 0), 0);
-
-            return { totalSales, totalCu, avg, menu: menuCombined, ecom: ecomCombined, expenses: expensesCombined,
-                totalExpenses, s1, s2 };
+            setVal('totalSales', data.sales || 0);
+            setVal('totalCu', data.cu || 0);
+            setDynamicItems('menu', data.menu || []);
+            setDynamicItems('ecom', data.ecom || []);
+            setExpenses(data.expenses || []);
         }
 
         // ============================================================
         // GENERATE REPORT
         // ============================================================
         function generateReport() {
-            const s1 = getShiftData('1');
-            const s2 = getShiftData('2');
-            const combined = combineShifts(s1, s2);
+            const data = getCombinedData();
+            const totalSales = data.sales;
+            const totalCu = data.cu;
+            const avg = totalCu > 0 ? totalSales / totalCu : 0;
 
             const dateStr = getDateString();
             const dayOfMonth = getDayOfMonth();
@@ -1288,15 +1173,15 @@
             const prevTotalSales = prevReport ? prevReport.monthlyTotalSales || 0 : 0;
             const prevTotalCu = prevReport ? prevReport.monthlyTotalCu || 0 : 0;
 
-            const totalSalesBulanan = combined.totalSales + prevTotalSales;
-            const totalCuBulanan = combined.totalCu + prevTotalCu;
+            const totalSalesBulanan = totalSales + prevTotalSales;
+            const totalCuBulanan = totalCu + prevTotalCu;
             const avgOmset = dayOfMonth > 0 ? totalSalesBulanan / dayOfMonth : 0;
             const avgCu = dayOfMonth > 0 ? totalCuBulanan / dayOfMonth : 0;
             const estimasiSelesBulanan = avgOmset * daysInMonth;
 
             // Menu lines
             const menuMap = {};
-            combined.menu.forEach(item => {
+            data.menu.forEach(item => {
                 const key = item.label.trim().toLowerCase();
                 if (menuMap[key]) menuMap[key] += item.value;
                 else menuMap[key] = item.value;
@@ -1305,13 +1190,14 @@
                 .map(([label, qty]) => `»${label.padEnd(28)} : ${qty}`)
                 .join('\n');
 
-            const ecomLines = combined.ecom.map(item =>
+            const ecomLines = data.ecom.map(item =>
                 `${item.label.padEnd(18)}: Rp. ${formatNumber(item.value)}`
             ).join('\n');
 
-            const expenseLines = combined.expenses.map(e =>
+            const expenseLines = data.expenses.map(e =>
                 `- ${e.desc} : Rp. ${formatNumber(e.amount)}`
             ).join('\n');
+            const totalExpenses = data.expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
 
             const team = getText('teamInput') || '-';
             const weather = getText('weatherInput') || '(isi manual)';
@@ -1336,9 +1222,9 @@
             report += `🗂️ 𝑳𝑨𝑷𝑶𝑹𝑨𝑵 𝑺𝑨𝑳𝑬𝑺 𝑯𝑨𝑹𝑰𝑨𝑵: \n\n`;
             report += `𝑻𝑨𝑹𝑮𝑬𝑻 𝑺𝑨𝑳𝑬𝑺 𝑯𝑨𝑹𝑰𝑨𝑵:\n`;
             report += `𝑹𝑷. 5.000.000\n\n`;
-            report += `𝑺𝑨𝑳𝑬𝑺: Rp.${formatNumber(combined.totalSales)}\n`;
-            report += `𝑪𝑼      : ${combined.totalCu}\n`;
-            report += `𝑨𝑽𝑮    : ${Math.round(combined.avg)}\n`;
+            report += `𝑺𝑨𝑳𝑬𝑺: Rp.${formatNumber(totalSales)}\n`;
+            report += `𝑪𝑼      : ${totalCu}\n`;
+            report += `𝑨𝑽𝑮    : ${Math.round(avg)}\n`;
             report += `========================\n\n`;
             report += `🍱 𝑴𝑬𝑵𝑼 𝑩𝑨𝑹𝑼 𝑮𝑬𝑷𝑹𝑬𝑲𝑰𝑵:\n`;
             report += `${menuLines || '(tidak ada menu)'}\n\n`;
@@ -1349,7 +1235,7 @@
             report += `📤𝐏𝐄𝐍𝐆𝐄𝐋𝐔𝐀𝐑𝐀𝐍:\n`;
             report += `${expenseLines || '(tidak ada pengeluaran)'}\n\n`;
             report += `𝐓𝐎𝐓𝐀𝐋 𝐏𝐄𝐍𝐆𝐄𝐋𝐔𝐀𝐑𝐀𝐍⬇️\n`;
-            report += `𝐑𝐏. ${formatNumber(combined.totalExpenses)}\n`;
+            report += `𝐑𝐏. ${formatNumber(totalExpenses)}\n`;
             report += `======================\n\n`;
             report += `🗑️𝐖𝐀𝐒𝐓𝐄:\n`;
             report += `${waste}\n\n`;
@@ -1384,10 +1270,7 @@
                 showToast('Pilih tanggal terlebih dahulu!', 'error');
                 return;
             }
-            const s1 = getShiftData('1');
-            const s2 = getShiftData('2');
-            const combined = combineShifts(s1, s2);
-
+            const data = getCombinedData();
             const allReports = getAllReports();
             const prevDate = getPreviousDate(dateStr);
             const prevReport = allReports[prevDate] || null;
@@ -1395,8 +1278,8 @@
             const prevTotalCu = prevReport ? prevReport.monthlyTotalCu || 0 : 0;
             const dayOfMonth = getDayOfMonth();
             const daysInMonth = getDaysInMonth();
-            const totalSalesBulanan = combined.totalSales + prevTotalSales;
-            const totalCuBulanan = combined.totalCu + prevTotalCu;
+            const totalSalesBulanan = data.sales + prevTotalSales;
+            const totalCuBulanan = data.cu + prevTotalCu;
             const avgOmset = dayOfMonth > 0 ? totalSalesBulanan / dayOfMonth : 0;
             const avgCu = dayOfMonth > 0 ? totalCuBulanan / dayOfMonth : 0;
             const estimasiSelesBulanan = avgOmset * daysInMonth;
@@ -1405,16 +1288,13 @@
                 date: dateStr,
                 dayOfMonth,
                 daysInMonth,
-                shift1: s1,
-                shift2: s2,
                 combined: {
-                    totalSales: combined.totalSales,
-                    totalCu: combined.totalCu,
-                    avg: combined.avg,
-                    menu: combined.menu,
-                    ecom: combined.ecom,
-                    expenses: combined.expenses,
-                    totalExpenses: combined.totalExpenses,
+                    sales: data.sales,
+                    cu: data.cu,
+                    menu: data.menu,
+                    ecom: data.ecom,
+                    expenses: data.expenses,
+                    totalExpenses: data.expenses.reduce((s, e) => s + (e.amount || 0), 0),
                 },
                 monthly: {
                     prevTotalSales,
@@ -1454,8 +1334,7 @@
                 return;
             }
             setVal('reportDate', data.date);
-            setShiftData('1', data.shift1);
-            setShiftData('2', data.shift2);
+            setCombinedData(data.combined);
             setVal('teamInput', data.manual?.team || '');
             setVal('weatherInput', data.manual?.weather || '');
             setVal('wasteInput', data.manual?.waste || '');
@@ -1487,8 +1366,8 @@
             let html = '';
             dates.forEach(date => {
                 const data = allReports[date];
-                const sales = data.combined?.totalSales || 0;
-                const cu = data.combined?.totalCu || 0;
+                const sales = data.combined?.sales || 0;
+                const cu = data.combined?.cu || 0;
                 html += `
                     <div class="history-item">
                         <div>
@@ -1541,21 +1420,16 @@
 
         function clearAll() {
             if (!confirm('Reset semua input? Data yang belum disimpan akan hilang.')) return;
-            setVal('s1_sales', 0);
-            setVal('s1_cu', 0);
-            setVal('s2_sales', 0);
-            setVal('s2_cu', 0);
-            setDynamicItems('menu1', []);
-            setDynamicItems('menu2', []);
-            setDynamicItems('ecom1', []);
-            setDynamicItems('ecom2', []);
-            setExpenses('1', []);
-            setExpenses('2', []);
+            setVal('totalSales', 0);
+            setVal('totalCu', 0);
+            setDynamicItems('menu', []);
+            setDynamicItems('ecom', []);
+            setExpenses([]);
             setVal('teamInput', '');
             setVal('weatherInput', '');
             setVal('wasteInput', '');
             document.getElementById('reportOutput').innerHTML =
-                `<span class="dim">Belum ada laporan. Ekstrak data dari struk lalu klik Generate.</span>`;
+                `<span class="dim">Belum ada laporan. Upload 4 foto, ekstrak, lalu Generate.</span>`;
             showToast('🗑️ Semua input direset', 'error');
         }
 
