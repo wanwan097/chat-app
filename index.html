@@ -1,924 +1,1600 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChatApp - Mirip WhatsApp</title>
-  <style>
-    /* ===== CSS ===== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      display: flex;
-      height: 100vh;
-      background: #e5ddd5;
-    }
-
-    /* Login/Register Screen */
-    #auth-screen {
-      position: fixed;
-      inset: 0;
-      background: #075e54;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-
-    .auth-container {
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-      text-align: center;
-    }
-
-    .auth-container h2 {
-      color: #075e54;
-      margin-bottom: 1.5rem;
-    }
-
-    .auth-container input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-
-    .auth-container button {
-      width: 100%;
-      padding: 10px;
-      background: #25d366;
-      border: none;
-      color: white;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-
-    .auth-container button:hover {
-      background: #1eb955;
-    }
-
-    .auth-container .toggle-mode {
-      color: #075e54;
-      cursor: pointer;
-      margin-top: 15px;
-      font-size: 14px;
-    }
-
-    .auth-error {
-      color: red;
-      font-size: 14px;
-      margin-top: 10px;
-    }
-
-    /* Main App Layout */
-    #app {
-      display: flex;
-      width: 100%;
-      height: 100vh;
-    }
-
-    /* Sidebar */
-    #sidebar {
-      width: 350px;
-      background: #ffffff;
-      border-right: 1px solid #ddd;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #sidebar-header {
-      background: #075e54;
-      padding: 15px;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    #sidebar-header .profile-info {
-      display: flex;
-      flex-direction: column;
-    }
-
-    #sidebar-header .profile-info .phone {
-      font-size: 12px;
-      opacity: 0.8;
-    }
-
-    #logout-btn {
-      background: transparent;
-      border: 1px solid white;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    #logout-btn:hover {
-      background: rgba(255,255,255,0.2);
-    }
-
-    .search-container {
-      padding: 10px;
-      background: #f0f0f0;
-      display: flex;
-      gap: 5px;
-    }
-
-    .search-container input {
-      flex: 1;
-      padding: 8px;
-      border: none;
-      border-radius: 5px;
-    }
-
-    .search-container button {
-      padding: 8px 12px;
-      background: #25d366;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .search-result {
-      padding: 10px;
-      background: #e1f5ea;
-      border-bottom: 1px solid #ccc;
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    #chat-list {
-      flex: 1;
-      overflow-y: auto;
-    }
-
-    .chat-item {
-      display: flex;
-      align-items: center;
-      padding: 12px 15px;
-      border-bottom: 1px solid #f0f0f0;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .chat-item:hover {
-      background: #f5f5f5;
-    }
-
-    .chat-item.active {
-      background: #ebebeb;
-    }
-
-    .chat-item .avatar {
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      background: #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: white;
-      margin-right: 12px;
-      flex-shrink: 0;
-    }
-
-    .chat-item .chat-details {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .chat-item .chat-details .name {
-      font-weight: 600;
-      color: #333;
-    }
-
-    .chat-item .chat-details .last-msg {
-      color: #777;
-      font-size: 14px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .chat-item .chat-time {
-      font-size: 12px;
-      color: #999;
-      margin-left: 10px;
-    }
-
-    /* Chat Area */
-    #chat-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: #e5ddd5;
-    }
-
-    #chat-header {
-      background: #075e54;
-      color: white;
-      padding: 15px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    #messages-container {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .message {
-      max-width: 70%;
-      padding: 8px 12px;
-      border-radius: 10px;
-      margin-bottom: 5px;
-      position: relative;
-      word-wrap: break-word;
-      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-    }
-
-    .message.sent {
-      align-self: flex-end;
-      background: #dcf8c6;
-      border-top-right-radius: 0;
-    }
-
-    .message.received {
-      align-self: flex-start;
-      background: white;
-      border-top-left-radius: 0;
-    }
-
-    .message .msg-text {
-      margin-bottom: 3px;
-    }
-
-    .message .msg-file {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .message img {
-      max-width: 200px;
-      max-height: 200px;
-      border-radius: 5px;
-      display: block;
-    }
-
-    .message .msg-time {
-      font-size: 11px;
-      color: #999;
-      text-align: right;
-    }
-
-    #message-input-area {
-      background: #f0f0f0;
-      padding: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    #message-input-area input[type="text"] {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 20px;
-      outline: none;
-      font-size: 16px;
-    }
-
-    #message-input-area .icon-btn {
-      background: none;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: #075e54;
-      padding: 5px;
-    }
-
-    #message-input-area .send-btn {
-      background: #25d366;
-      border: none;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 16px;
-    }
-
-    .empty-chat {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #777;
-      font-size: 18px;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      #sidebar {
-        width: 100%;
-      }
-      #chat-area {
-        display: none;
-      }
-      #chat-area.active {
-        display: flex;
-        position: fixed;
-        inset: 0;
-      }
-      #sidebar.hidden {
-        display: none;
-      }
-    }
-
-    .hidden {
-      display: none !important;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OCR Laporan Sales - Geprek Inaja</title>
+    <!-- Tesseract.js dari CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #f6f3ef;
+            padding: 20px 16px 40px;
+            color: #1e1e2a;
+        }
+        .app-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .app-header {
+            text-align: center;
+            padding: 14px 0 18px;
+            border-bottom: 3px solid #e85d3a;
+            margin-bottom: 24px;
+        }
+        .app-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+        }
+        .app-header h1 span {
+            color: #e85d3a;
+        }
+        .app-header .sub {
+            font-size: 14px;
+            color: #6b6b7a;
+            margin-top: 4px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 20px 18px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            border: 1px solid #eeeae5;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #1e1e2a;
+        }
+        .card-title .badge {
+            background: #e85d3a;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 0 12px;
+            border-radius: 40px;
+            line-height: 24px;
+        }
+        .badge.shift2 {
+            background: #2a6f97;
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px 18px;
+            margin-bottom: 12px;
+        }
+        .form-group {
+            flex: 1 1 180px;
+            min-width: 140px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #3d3d4a;
+            margin-bottom: 4px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid #ddd8d1;
+            border-radius: 12px;
+            font-size: 15px;
+            background: #faf8f6;
+            transition: 0.2s;
+            outline: none;
+            color: #1e1e2a;
+            font-family: inherit;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #e85d3a;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(232, 93, 58, 0.12);
+        }
+        .form-group input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .form-group input[type="number"]::-webkit-outer-spin-button,
+        .form-group input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+        .input-rupiah {
+            position: relative;
+        }
+        .input-rupiah input {
+            padding-left: 32px;
+        }
+        .input-rupiah .rp {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: 700;
+            color: #6b6b7a;
+            font-size: 14px;
+        }
+        .form-divider {
+            border: none;
+            border-top: 2px dashed #e8e2da;
+            margin: 18px 0 16px;
+        }
+        .upload-area {
+            border: 2px dashed #ddd8d1;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            background: #faf8f6;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 12px;
+        }
+        .upload-area:hover {
+            border-color: #e85d3a;
+            background: #fff5f0;
+        }
+        .upload-area img {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+        .upload-area .file-label {
+            font-weight: 600;
+            color: #e85d3a;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-primary {
+            background: #e85d3a;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #d14d2c;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(232, 93, 58, 0.35);
+        }
+        .btn-secondary {
+            background: #e8e2da;
+            color: #2d2d3a;
+        }
+        .btn-secondary:hover {
+            background: #d5cec6;
+        }
+        .btn-success {
+            background: #2a9d8f;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #21867a;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #e85d3a;
+            color: #e85d3a;
+        }
+        .btn-outline:hover {
+            background: #e85d3a;
+            color: #fff;
+        }
+        .btn-sm {
+            padding: 6px 16px;
+            font-size: 13px;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .btn-danger {
+            background: #c0392b;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #a93226;
+        }
+        .report-preview {
+            background: #fcf9f6;
+            border-radius: 16px;
+            padding: 20px 18px;
+            border: 2px solid #e8e2da;
+            font-size: 14px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            border-bottom: 1px solid #eeeae5;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+        .history-item:hover {
+            background: #f8f5f1;
+        }
+        .history-item .h-date {
+            font-weight: 600;
+        }
+        .history-item .h-sales {
+            color: #e85d3a;
+            font-weight: 700;
+        }
+        .history-item .h-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .history-item .h-actions button {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 30px;
+            transition: 0.2s;
+        }
+        .history-item .h-actions .del-btn:hover {
+            background: #fce4e0;
+            color: #c0392b;
+        }
+        .history-item .h-actions .load-btn:hover {
+            background: #e0f0ee;
+            color: #1a7a6a;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 30px 10px;
+            color: #9a8f84;
+            font-size: 15px;
+        }
+        .tag {
+            display: inline-block;
+            background: #e8e2da;
+            padding: 0 14px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 26px;
+            color: #3d3d4a;
+        }
+        .tag.shift1 {
+            background: #e85d3a;
+            color: #fff;
+        }
+        .tag.shift2 {
+            background: #2a6f97;
+            color: #fff;
+        }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e1e2a;
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s;
+            z-index: 999;
+        }
+        .toast.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .toast.success {
+            background: #2a9d8f;
+        }
+        .toast.error {
+            background: #e85d3a;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-12 {
+            margin-top: 12px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .ocr-status {
+            font-size: 14px;
+            color: #6b6b7a;
+            margin-top: 6px;
+        }
+        .dynamic-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8f5f1;
+            padding: 4px 10px 4px 14px;
+            border-radius: 40px;
+            border: 1px solid #e8e2da;
+            margin-bottom: 6px;
+            flex-wrap: wrap;
+        }
+        .dynamic-item label {
+            font-size: 13px;
+            font-weight: 500;
+            flex: 1;
+            min-width: 100px;
+        }
+        .dynamic-item input {
+            width: 80px;
+            padding: 6px 8px;
+            border: 1px solid #d5cec6;
+            border-radius: 30px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            background: #fff;
+            outline: none;
+        }
+        .dynamic-item input:focus {
+            border-color: #e85d3a;
+        }
+        .dynamic-item .btn-remove {
+            background: none;
+            border: none;
+            color: #a05a4a;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 4px;
+        }
+        .dynamic-item .btn-remove:hover {
+            color: #c0392b;
+        }
+        .expense-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 14px;
+            align-items: center;
+            background: #f8f5f1;
+            padding: 10px 14px;
+            border-radius: 16px;
+            border: 1px solid #e8e2da;
+            margin-bottom: 8px;
+        }
+        .expense-row .form-group {
+            flex: 1 1 120px;
+            min-width: 100px;
+        }
+        .expense-row .form-group label {
+            font-size: 12px;
+        }
+        .expense-row .form-group input {
+            padding: 8px 10px;
+            font-size: 14px;
+        }
+        .btn-remove-exp {
+            background: #f0e8e0;
+            border: none;
+            border-radius: 40px;
+            padding: 6px 14px;
+            font-weight: 700;
+            color: #7a5a4a;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+            margin-left: auto;
+        }
+        .btn-remove-exp:hover {
+            background: #e85d3a;
+            color: #fff;
+        }
+        .shift-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .shift-toggle button {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd8d1;
+            border-radius: 40px;
+            background: #faf8f6;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #3d3d4a;
+        }
+        .shift-toggle button.active {
+            border-color: #e85d3a;
+            background: #fff5f0;
+            color: #e85d3a;
+        }
+        .shift-toggle button.active.shift2-active {
+            border-color: #2a6f97;
+            background: #eef6fa;
+            color: #2a6f97;
+        }
+        .shift-panel {
+            display: none;
+        }
+        .shift-panel.active {
+            display: block;
+        }
+        @media (max-width: 600px) {
+            .form-group {
+                flex: 1 1 100%;
+                min-width: 0;
+            }
+            .dynamic-item {
+                flex-wrap: wrap;
+            }
+            .dynamic-item input {
+                width: 60px;
+            }
+            .expense-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-remove-exp {
+                margin-left: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-  <!-- Layar Autentikasi -->
-  <div id="auth-screen">
-    <div class="auth-container">
-      <h2>ChatApp</h2>
-      <input type="email" id="email" placeholder="Email" required>
-      <input type="password" id="password" placeholder="Password" required>
-      <button id="auth-btn">Login</button>
-      <div class="toggle-mode" id="toggle-auth">Belum punya akun? Daftar</div>
-      <div class="auth-error" id="auth-error"></div>
-    </div>
-  </div>
 
-  <!-- Aplikasi Utama -->
-  <div id="app" class="hidden">
-    <!-- Sidebar -->
-    <div id="sidebar">
-      <div id="sidebar-header">
-        <div class="profile-info">
-          <span id="display-email">user@mail.com</span>
-          <span class="phone">Nomor HP: <span id="my-phone">-</span></span>
-        </div>
-        <button id="logout-btn">Logout</button>
-      </div>
-      <div class="search-container">
-        <input type="text" id="search-phone" placeholder="Cari nomor HP...">
-        <button id="search-btn">Cari</button>
-      </div>
-      <div class="search-result" id="search-result">
-        <span id="search-result-info"></span>
-        <button id="start-chat-btn">Chat</button>
-      </div>
-      <div id="chat-list"></div>
-    </div>
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
 
-    <!-- Area Chat -->
-    <div id="chat-area">
-      <div id="chat-header">
-        <span id="chat-partner-name">Pilih kontak untuk mulai chat</span>
-      </div>
-      <div id="messages-container">
-        <div class="empty-chat" id="empty-chat">Pilih atau cari kontak untuk memulai percakapan</div>
-      </div>
-      <div id="message-input-area">
-        <button class="icon-btn" id="attach-btn" title="Lampirkan file/foto">📎</button>
-        <input type="text" id="message-input" placeholder="Ketik pesan...">
-        <input type="file" id="file-input" style="display:none">
-        <button class="send-btn" id="send-btn">Kirim</button>
-      </div>
-    </div>
-  </div>
+    <div class="app-container">
 
-  <!-- Firebase Modular SDK -->
-  <script type="importmap">
-    {
-      "imports": {
-        "firebase/app": "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js",
-        "firebase/auth": "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js",
-        "firebase/database": "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js",
-        "firebase/storage": "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js"
-      }
-    }
-  </script>
+        <!-- HEADER -->
+        <header class="app-header">
+            <h1>🐓 <span>GEPREK</span>INAJA</h1>
+            <div class="sub">OCR Laporan Sales • Shift 1 + Shift 2</div>
+        </header>
 
-  <script type="module">
-    // ===== IMPORTS =====
-    import { initializeApp } from "firebase/app";
-    import { 
-      getAuth, 
-      createUserWithEmailAndPassword, 
-      signInWithEmailAndPassword, 
-      onAuthStateChanged, 
-      signOut 
-    } from "firebase/auth";
-    import { 
-      getDatabase, 
-      ref, 
-      set, 
-      get, 
-      push, 
-      onValue, 
-      update, 
-      query, 
-      orderByChild, 
-      equalTo 
-    } from "firebase/database";
-    import { 
-      getStorage, 
-      ref as storageRef, 
-      uploadBytes, 
-      getDownloadURL 
-    } from "firebase/storage";
-
-    // ===== FIREBASE CONFIG =====
-    const firebaseConfig = {
-      apiKey: "AIzaSyDBf6bY1q590iT0wzZEYLsX2wGkPdzvHzw",
-      authDomain: "game-e2a69.firebaseapp.com",
-      databaseURL: "https://game-e2a69-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "game-e2a69",
-      storageBucket: "game-e2a69.firebasestorage.app",
-      messagingSenderId: "280861397904",
-      appId: "1:280861397904:web:ea7feedca9a23018489915",
-      measurementId: "G-KGGLVXJ7G5"
-    };
-
-    // ===== INIT FIREBASE =====
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-    const storage = getStorage(app);
-
-    // ===== VARIABEL GLOBAL =====
-    let currentUser = null;
-    let currentUserUid = null;
-    let currentPhone = null;
-    let activeChatId = null;
-    let activeOtherUid = null;
-    let activeOtherPhone = null;
-    let allChats = {}; // cache daftar chat user
-
-    // ===== DOM ELEMENTS =====
-    const authScreen = document.getElementById('auth-screen');
-    const appDiv = document.getElementById('app');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const authBtn = document.getElementById('auth-btn');
-    const toggleAuth = document.getElementById('toggle-auth');
-    const authError = document.getElementById('auth-error');
-    const displayEmail = document.getElementById('display-email');
-    const myPhoneSpan = document.getElementById('my-phone');
-    const logoutBtn = document.getElementById('logout-btn');
-    const searchPhoneInput = document.getElementById('search-phone');
-    const searchBtn = document.getElementById('search-btn');
-    const searchResultDiv = document.getElementById('search-result');
-    const searchResultInfo = document.getElementById('search-result-info');
-    const startChatBtn = document.getElementById('start-chat-btn');
-    const chatListDiv = document.getElementById('chat-list');
-    const chatArea = document.getElementById('chat-area');
-    const sidebar = document.getElementById('sidebar');
-    const chatPartnerName = document.getElementById('chat-partner-name');
-    const messagesContainer = document.getElementById('messages-container');
-    const emptyChatDiv = document.getElementById('empty-chat');
-    const messageInput = document.getElementById('message-input');
-    const sendBtn = document.getElementById('send-btn');
-    const attachBtn = document.getElementById('attach-btn');
-    const fileInput = document.getElementById('file-input');
-
-    let isLoginMode = true; // true = login, false = register
-    let foundUserUid = null;
-    let foundUserPhone = null;
-
-    // ===== FUNGSI UTIL =====
-    function generateRandomPhone() {
-      // Generate 10 digit nomor acak
-      let phone = '';
-      for (let i = 0; i < 10; i++) {
-        phone += Math.floor(Math.random() * 10);
-      }
-      return phone;
-    }
-
-    async function createUniquePhone() {
-      let phone = generateRandomPhone();
-      let exists = true;
-      while (exists) {
-        const snapshot = await get(ref(db, `phoneNumbers/${phone}`));
-        if (!snapshot.exists()) {
-          exists = false;
-        } else {
-          phone = generateRandomPhone();
-        }
-      }
-      return phone;
-    }
-
-    function getChatId(uid1, uid2) {
-      return [uid1, uid2].sort().join('_');
-    }
-
-    function formatTime(timestamp) {
-      const date = new Date(timestamp);
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    // ===== AUTENTIKASI =====
-    function toggleAuthMode() {
-      isLoginMode = !isLoginMode;
-      authBtn.textContent = isLoginMode ? 'Login' : 'Daftar';
-      toggleAuth.textContent = isLoginMode ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Login';
-    }
-
-    async function handleAuth() {
-      const email = emailInput.value.trim();
-      const password = passwordInput.value.trim();
-      if (!email || !password) {
-        authError.textContent = 'Email dan password harus diisi!';
-        return;
-      }
-      authError.textContent = '';
-      try {
-        if (isLoginMode) {
-          await signInWithEmailAndPassword(auth, email, password);
-        } else {
-          await createUserWithEmailAndPassword(auth, email, password);
-        }
-        // onAuthStateChanged akan menangani setelah login
-      } catch (error) {
-        authError.textContent = error.message;
-      }
-    }
-
-    // ===== SETUP USER DATA =====
-    async function setupUserData(user) {
-      currentUserUid = user.uid;
-      currentUser = user;
-      displayEmail.textContent = user.email;
-
-      // Cek apakah user sudah punya nomor HP di database
-      const userRef = ref(db, `users/${user.uid}`);
-      const userSnapshot = await get(userRef);
-
-      let phoneNumber;
-      if (userSnapshot.exists() && userSnapshot.val().phoneNumber) {
-        phoneNumber = userSnapshot.val().phoneNumber;
-      } else {
-        // Generate nomor unik
-        phoneNumber = await createUniquePhone();
-        // Simpan data user
-        await set(userRef, {
-          email: user.email,
-          phoneNumber: phoneNumber
-        });
-        // Simpan mapping phoneNumber -> uid
-        await set(ref(db, `phoneNumbers/${phoneNumber}`), user.uid);
-      }
-
-      currentPhone = phoneNumber;
-      myPhoneSpan.textContent = phoneNumber;
-
-      // Tampilkan aplikasi
-      authScreen.classList.add('hidden');
-      appDiv.classList.remove('hidden');
-
-      // Muat daftar chat
-      loadChatList();
-    }
-
-    // ===== LOAD CHAT LIST =====
-    function loadChatList() {
-      if (!currentUserUid) return;
-      const userChatsRef = ref(db, `userChats/${currentUserUid}`);
-      onValue(userChatsRef, (snapshot) => {
-        chatListDiv.innerHTML = '';
-        if (!snapshot.exists()) {
-          chatListDiv.innerHTML = '<div style="padding:20px;text-align:center;color:#999;">Belum ada percakapan</div>';
-          return;
-        }
-        const chats = snapshot.val();
-        allChats = chats;
-        const sortedChatIds = Object.keys(chats).sort((a,b) => chats[b].timestamp - chats[a].timestamp);
-
-        sortedChatIds.forEach(chatId => {
-          const chatData = chats[chatId];
-          const otherPhone = chatData.otherPhone;
-          const lastMsg = chatData.lastMessage || '';
-          const lastType = chatData.lastMessageType || 'text';
-          const lastTime = chatData.timestamp ? formatTime(chatData.timestamp) : '';
-
-          const chatItem = document.createElement('div');
-          chatItem.className = 'chat-item' + (activeChatId === chatId ? ' active' : '');
-          chatItem.innerHTML = `
-            <div class="avatar">${otherPhone.charAt(0)}</div>
-            <div class="chat-details">
-              <div class="name">${otherPhone}</div>
-              <div class="last-msg">${lastType === 'image' ? '📷 Foto' : lastType === 'file' ? '📎 File' : lastMsg}</div>
+        <!-- DATE -->
+        <div class="card">
+            <div class="form-row">
+                <div class="form-group" style="flex:2;">
+                    <label>📅 Tanggal Laporan</label>
+                    <input type="date" id="reportDate" />
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>📆 Hari ke-</label>
+                    <input type="number" id="dayOfMonth" min="1" max="31" placeholder="1" />
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>📆 Total Hari Bulan Ini</label>
+                    <input type="number" id="daysInMonth" min="28" max="31" placeholder="30" />
+                </div>
             </div>
-            <div class="chat-time">${lastTime}</div>
-          `;
-          chatItem.addEventListener('click', () => openChat(chatId, chatData.otherUid, otherPhone));
-          chatListDiv.appendChild(chatItem);
+        </div>
+
+        <!-- SHIFT TOGGLE -->
+        <div class="card">
+            <div class="shift-toggle">
+                <button id="shift1Tab" class="active">🟠 Shift 1 (Struk Atas)</button>
+                <button id="shift2Tab" class="shift2-active">🔵 Shift 2 (Struk Bawah)</button>
+            </div>
+
+            <!-- SHIFT 1 -->
+            <div id="shift1Panel" class="shift-panel active">
+                <div class="card-title">
+                    <span class="badge shift1">SHIFT 1</span>
+                    <span style="font-size:14px;font-weight:400;color:#6b6b7a;">upload foto struk bagian atas</span>
+                </div>
+
+                <!-- Upload OCR -->
+                <div class="upload-area" id="upload1Area">
+                    <span class="file-label">📤 Klik untuk upload foto struk Shift 1</span>
+                    <input type="file" id="upload1" accept="image/*" style="display:none;" />
+                    <br />
+                    <img id="preview1" style="display:none;" alt="Preview Struk 1" />
+                    <div class="ocr-status" id="ocrStatus1">Belum ada gambar</div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary btn-sm" onclick="runOCR('1')">🔍 Ekstrak Data Shift 1</button>
+                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('upload1').click()">📂 Pilih Gambar</button>
+                </div>
+
+                <hr class="form-divider" />
+
+                <!-- Hasil OCR / Manual -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>💰 Penjualan Bersih (S1)</label>
+                        <div class="input-rupiah">
+                            <span class="rp">Rp</span>
+                            <input type="number" id="s1_sales" step="1" placeholder="0" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>🧑‍🤝‍🧑 CU / Total Pax (S1)</label>
+                        <input type="number" id="s1_cu" step="1" placeholder="0" />
+                    </div>
+                </div>
+
+                <div style="font-weight:600;font-size:15px;margin:12px 0 8px;">🍱 Menu Terjual (S1) — <span style="font-weight:400;font-size:13px;color:#6b6b7a;">otomatis dari OCR, bisa diedit</span></div>
+                <div id="menu1Container"></div>
+                <button class="btn btn-secondary btn-sm" onclick="addDynamicItem('menu1')" style="margin-top:6px;">+ Tambah Menu</button>
+
+                <div style="font-weight:600;font-size:15px;margin:16px 0 8px;">📱 E-Commerce (S1) — total nominal</div>
+                <div id="ecom1Container"></div>
+                <button class="btn btn-secondary btn-sm" onclick="addDynamicItem('ecom1')" style="margin-top:6px;">+ Tambah E-Commerce</button>
+
+                <div style="font-weight:600;font-size:15px;margin:16px 0 8px;">📤 Pengeluaran (S1)</div>
+                <div id="expenses1Container"></div>
+                <button class="btn btn-secondary btn-sm" onclick="addExpense('1')" style="margin-top:6px;">+ Tambah Pengeluaran</button>
+            </div>
+
+            <!-- SHIFT 2 -->
+            <div id="shift2Panel" class="shift-panel">
+                <div class="card-title">
+                    <span class="badge shift2">SHIFT 2</span>
+                    <span style="font-size:14px;font-weight:400;color:#6b6b7a;">upload foto struk bagian bawah</span>
+                </div>
+
+                <div class="upload-area" id="upload2Area">
+                    <span class="file-label">📤 Klik untuk upload foto struk Shift 2</span>
+                    <input type="file" id="upload2" accept="image/*" style="display:none;" />
+                    <br />
+                    <img id="preview2" style="display:none;" alt="Preview Struk 2" />
+                    <div class="ocr-status" id="ocrStatus2">Belum ada gambar</div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary btn-sm" onclick="runOCR('2')">🔍 Ekstrak Data Shift 2</button>
+                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('upload2').click()">📂 Pilih Gambar</button>
+                </div>
+
+                <hr class="form-divider" />
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>💰 Penjualan Bersih (S2)</label>
+                        <div class="input-rupiah">
+                            <span class="rp">Rp</span>
+                            <input type="number" id="s2_sales" step="1" placeholder="0" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>🧑‍🤝‍🧑 CU / Total Pax (S2)</label>
+                        <input type="number" id="s2_cu" step="1" placeholder="0" />
+                    </div>
+                </div>
+
+                <div style="font-weight:600;font-size:15px;margin:12px 0 8px;">🍱 Menu Terjual (S2) — <span style="font-weight:400;font-size:13px;color:#6b6b7a;">otomatis dari OCR, bisa diedit</span></div>
+                <div id="menu2Container"></div>
+                <button class="btn btn-secondary btn-sm" onclick="addDynamicItem('menu2')" style="margin-top:6px;">+ Tambah Menu</button>
+
+                <div style="font-weight:600;font-size:15px;margin:16px 0 8px;">📱 E-Commerce (S2) — total nominal</div>
+                <div id="ecom2Container"></div>
+                <button class="btn btn-secondary btn-sm" onclick="addDynamicItem('ecom2')" style="margin-top:6px;">+ Tambah E-Commerce</button>
+
+                <div style="font-weight:600;font-size:15px;margin:16px 0 8px;">📤 Pengeluaran (S2)</div>
+                <div id="expenses2Container"></div>
+                <button class="btn btn-secondary btn-sm" onclick="addExpense('2')" style="margin-top:6px;">+ Tambah Pengeluaran</button>
+            </div>
+        </div>
+
+        <!-- TEAM / WEATHER / WASTE -->
+        <div class="card">
+            <div class="card-title">👩🏻‍🍳 Tim &amp; Catatan</div>
+            <div class="form-row">
+                <div class="form-group" style="flex:2;">
+                    <label>👥 Tim bertugas (Shift 1 + 2 digabung)</label>
+                    <input type="text" id="teamInput" placeholder="YUSUF, RUDIN, SAHRUL, ABDUL, DIKA" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>🌦️ Cuaca (manual)</label>
+                    <input type="text" id="weatherInput" placeholder="PAGI: CERAH, SIANG: PANAS, dll" />
+                </div>
+                <div class="form-group">
+                    <label>🗑️ Waste (manual)</label>
+                    <input type="text" id="wasteInput" placeholder="AB: 1 PCS, NASI: 850gr, dll" />
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="card">
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="generateReport()">📊 Generate Laporan</button>
+                <button class="btn btn-success" onclick="saveReport()">💾 Simpan Laporan</button>
+                <button class="btn btn-secondary" onclick="loadToday()">📂 Muat Hari Ini</button>
+                <button class="btn btn-secondary" onclick="clearAll()" style="color:#a05a4a;">🗑️ Reset</button>
+            </div>
+        </div>
+
+        <!-- REPORT PREVIEW -->
+        <div class="card">
+            <div class="flex-between">
+                <div class="card-title" style="margin-bottom:0;">📄 Preview Laporan</div>
+                <button class="btn btn-secondary btn-sm" onclick="copyReport()">📋 Salin</button>
+            </div>
+            <div id="reportOutput" class="report-preview" style="margin-top:12px;">
+                <span class="dim">Belum ada laporan. Ekstrak data dari struk lalu klik Generate.</span>
+            </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div class="card">
+            <div class="flex-between">
+                <div class="card-title" style="margin-bottom:0;">📚 Riwayat Laporan</div>
+                <button class="btn btn-secondary btn-sm" onclick="loadHistory()">🔄 Refresh</button>
+            </div>
+            <div id="historyList" class="history-list" style="margin-top:12px;">
+                <div class="empty-state">Belum ada data tersimpan.</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================
+        // GLOBAL STATE
+        // ============================================================
+        const STORAGE_KEY = 'geprek_reports';
+        let expenseCounter = { 1: 0, 2: 0 };
+        let dynamicCounter = { menu1: 0, menu2: 0, ecom1: 0, ecom2: 0 };
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set date default
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const d = String(today.getDate()).padStart(2, '0');
+            document.getElementById('reportDate').value = `${y}-${m}-${d}`;
+            updateDateMeta();
+
+            // Upload handlers
+            setupUpload('1');
+            setupUpload('2');
+
+            // Shift toggle
+            document.getElementById('shift1Tab').addEventListener('click', () => setActiveShift('1'));
+            document.getElementById('shift2Tab').addEventListener('click', () => setActiveShift('2'));
+
+            // Date change
+            document.getElementById('reportDate').addEventListener('change', updateDateMeta);
+
+            // Init dynamic containers with default empty items
+            addDynamicItem('menu1');
+            addDynamicItem('menu2');
+            addDynamicItem('ecom1');
+            addDynamicItem('ecom2');
+            addExpense('1');
+            addExpense('2');
+
+            loadToday();
+            loadHistory();
         });
-      });
-    }
 
-    // ===== OPEN CHAT =====
-    function openChat(chatId, otherUid, otherPhone) {
-      activeChatId = chatId;
-      activeOtherUid = otherUid;
-      activeOtherPhone = otherPhone;
-
-      // Update UI
-      chatPartnerName.textContent = otherPhone;
-      emptyChatDiv.style.display = 'none';
-      messagesContainer.innerHTML = '';
-      
-      // Highlight item aktif
-      document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
-      // Muat pesan
-      loadMessages(chatId);
-
-      // Mobile: tampilkan area chat
-      if (window.innerWidth <= 768) {
-        sidebar.classList.add('hidden');
-        chatArea.classList.add('active');
-      }
-    }
-
-    // ===== LOAD MESSAGES =====
-    function loadMessages(chatId) {
-      const messagesRef = ref(db, `chats/${chatId}/messages`);
-      onValue(messagesRef, (snapshot) => {
-        messagesContainer.innerHTML = '';
-        if (!snapshot.exists()) return;
-        const messages = snapshot.val();
-        const sortedKeys = Object.keys(messages).sort((a,b) => messages[a].timestamp - messages[b].timestamp);
-        
-        sortedKeys.forEach(key => {
-          const msg = messages[key];
-          const isSent = msg.senderUid === currentUserUid;
-          const messageDiv = document.createElement('div');
-          messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
-
-          let content = '';
-          if (msg.type === 'text') {
-            content = `<div class="msg-text">${escapeHtml(msg.text)}</div>`;
-          } else if (msg.type === 'image') {
-            content = `<img src="${msg.fileUrl}" alt="Foto"><div class="msg-text">${escapeHtml(msg.text || '')}</div>`;
-          } else if (msg.type === 'file') {
-            content = `<div class="msg-file">
-              <a href="${msg.fileUrl}" target="_blank">📎 ${escapeHtml(msg.fileName || 'File')}</a>
-            </div><div class="msg-text">${escapeHtml(msg.text || '')}</div>`;
-          }
-          
-          messageDiv.innerHTML = content + `<div class="msg-time">${formatTime(msg.timestamp)}</div>`;
-          messagesContainer.appendChild(messageDiv);
-        });
-        // Scroll ke bawah
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      });
-    }
-
-    // ===== ESCAPE HTML =====
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    // ===== SEND TEXT MESSAGE =====
-    async function sendMessage(type = 'text', fileUrl = null, fileName = null, text = '') {
-      if (!activeChatId || !activeOtherUid) {
-        alert('Pilih kontak terlebih dahulu!');
-        return;
-      }
-
-      const messageText = text || messageInput.value.trim();
-      if (!messageText && !fileUrl) return;
-
-      const messageData = {
-        senderUid: currentUserUid,
-        senderPhone: currentPhone,
-        type: type,
-        text: messageText,
-        fileUrl: fileUrl,
-        fileName: fileName,
-        timestamp: Date.now()
-      };
-
-      // Push ke messages
-      const messagesRef = ref(db, `chats/${activeChatId}/messages`);
-      const newMsgRef = push(messagesRef);
-      await set(newMsgRef, messageData);
-
-      // Update userChats untuk kedua user
-      const chatUpdateData = {
-        otherUid: activeOtherUid,
-        otherPhone: activeOtherPhone,
-        lastMessage: type === 'text' ? messageText : (type === 'image' ? '📷 Foto' : '📎 File'),
-        lastMessageType: type,
-        timestamp: Date.now()
-      };
-      await set(ref(db, `userChats/${currentUserUid}/${activeChatId}`), chatUpdateData);
-      await set(ref(db, `userChats/${activeOtherUid}/${activeChatId}`), {
-        otherUid: currentUserUid,
-        otherPhone: currentPhone,
-        lastMessage: type === 'text' ? messageText : (type === 'image' ? '📷 Foto' : '📎 File'),
-        lastMessageType: type,
-        timestamp: Date.now()
-      });
-
-      // Kosongkan input
-      if (type === 'text') {
-        messageInput.value = '';
-      }
-    }
-
-    // ===== HANDLE FILE UPLOAD =====
-    async function handleFileUpload(file) {
-      if (!activeChatId) {
-        alert('Pilih kontak terlebih dahulu!');
-        return;
-      }
-      if (!file) return;
-
-      const isImage = file.type.startsWith('image/');
-      const storageReference = storageRef(storage, `chatFiles/${currentUserUid}/${Date.now()}_${file.name}`);
-      
-      try {
-        await uploadBytes(storageReference, file);
-        const downloadURL = await getDownloadURL(storageReference);
-        const type = isImage ? 'image' : 'file';
-        await sendMessage(type, downloadURL, file.name, messageInput.value);
-        messageInput.value = '';
-      } catch (error) {
-        console.error('Upload gagal:', error);
-        alert('Upload file gagal: ' + error.message);
-      }
-    }
-
-    // ===== SEARCH PHONE =====
-    async function searchPhone() {
-      const phone = searchPhoneInput.value.trim();
-      if (!phone) {
-        alert('Masukkan nomor HP!');
-        return;
-      }
-
-      try {
-        const phoneRef = ref(db, `phoneNumbers/${phone}`);
-        const snapshot = await get(phoneRef);
-        if (snapshot.exists()) {
-          foundUserUid = snapshot.val();
-          if (foundUserUid === currentUserUid) {
-            searchResultDiv.style.display = 'flex';
-            searchResultInfo.textContent = 'Ini nomor Anda sendiri';
-            startChatBtn.style.display = 'none';
-          } else {
-            // Dapatkan data user
-            const userSnap = await get(ref(db, `users/${foundUserUid}`));
-            if (userSnap.exists()) {
-              foundUserPhone = phone;
-              searchResultDiv.style.display = 'flex';
-              searchResultInfo.textContent = `Ditemukan: ${phone} (${userSnap.val().email})`;
-              startChatBtn.style.display = 'inline-block';
-            }
-          }
-        } else {
-          searchResultDiv.style.display = 'flex';
-          searchResultInfo.textContent = 'Nomor tidak ditemukan';
-          startChatBtn.style.display = 'none';
+        // ============================================================
+        // DATE HELPERS
+        // ============================================================
+        function updateDateMeta() {
+            const dateVal = document.getElementById('reportDate').value;
+            if (!dateVal) return;
+            const parts = dateVal.split('-');
+            const year = parseInt(parts[0]);
+            const month = parseInt(parts[1]);
+            const day = parseInt(parts[2]);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            document.getElementById('dayOfMonth').value = day;
+            document.getElementById('daysInMonth').value = daysInMonth;
         }
-      } catch (error) {
-        console.error('Error:', error);
-        alert('Terjadi kesalahan saat mencari');
-      }
-    }
 
-    // ===== START CHAT WITH FOUND USER =====
-    function startChatWithFoundUser() {
-      if (!foundUserUid || !foundUserPhone) return;
-      const chatId = getChatId(currentUserUid, foundUserUid);
-      activeChatId = chatId;
-      activeOtherUid = foundUserUid;
-      activeOtherPhone = foundUserPhone;
-      
-      chatPartnerName.textContent = foundUserPhone;
-      emptyChatDiv.style.display = 'none';
-      messagesContainer.innerHTML = '';
-      loadMessages(chatId);
-      
-      // Buat atau update userChats
-      set(ref(db, `userChats/${currentUserUid}/${chatId}`), {
-        otherUid: foundUserUid,
-        otherPhone: foundUserPhone,
-        lastMessage: '',
-        lastMessageType: 'text',
-        timestamp: Date.now()
-      });
-      set(ref(db, `userChats/${foundUserUid}/${chatId}`), {
-        otherUid: currentUserUid,
-        otherPhone: currentPhone,
-        lastMessage: '',
-        lastMessageType: 'text',
-        timestamp: Date.now()
-      });
+        function getDateString() { return document.getElementById('reportDate').value; }
 
-      // Sembunyikan hasil pencarian
-      searchResultDiv.style.display = 'none';
-      searchPhoneInput.value = '';
+        function getDayOfMonth() { return parseInt(document.getElementById('dayOfMonth').value) || 1; }
 
-      // Mobile: tampilkan chat area
-      if (window.innerWidth <= 768) {
-        sidebar.classList.add('hidden');
-        chatArea.classList.add('active');
-      }
-    }
+        function getDaysInMonth() { return parseInt(document.getElementById('daysInMonth').value) || 30; }
 
-    // ===== LOGOUT =====
-    async function logout() {
-      await signOut(auth);
-      // Reset UI
-      authScreen.classList.remove('hidden');
-      appDiv.classList.add('hidden');
-      currentUser = null;
-      currentUserUid = null;
-      currentPhone = null;
-      activeChatId = null;
-      activeOtherUid = null;
-      activeOtherPhone = null;
-      chatListDiv.innerHTML = '';
-      messagesContainer.innerHTML = '';
-      chatPartnerName.textContent = 'Pilih kontak untuk mulai chat';
-      emptyChatDiv.style.display = 'flex';
-    }
+        // ============================================================
+        // SHIFT TOGGLE
+        // ============================================================
+        function setActiveShift(shift) {
+            const tab1 = document.getElementById('shift1Tab');
+            const tab2 = document.getElementById('shift2Tab');
+            const panel1 = document.getElementById('shift1Panel');
+            const panel2 = document.getElementById('shift2Panel');
+            if (shift === '1') {
+                tab1.classList.add('active');
+                tab1.classList.remove('shift2-active');
+                tab2.classList.remove('active', 'shift2-active');
+                panel1.classList.add('active');
+                panel2.classList.remove('active');
+            } else {
+                tab2.classList.add('active', 'shift2-active');
+                tab1.classList.remove('active');
+                panel2.classList.add('active');
+                panel1.classList.remove('active');
+            }
+        }
 
-    // ===== EVENT LISTENERS =====
-    authBtn.addEventListener('click', handleAuth);
-    toggleAuth.addEventListener('click', toggleAuthMode);
-    logoutBtn.addEventListener('click', logout);
-    searchBtn.addEventListener('click', searchPhone);
-    startChatBtn.addEventListener('click', startChatWithFoundUser);
-    sendBtn.addEventListener('click', () => sendMessage('text'));
-    messageInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage('text');
-    });
-    attachBtn.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) {
-        handleFileUpload(e.target.files[0]);
-        fileInput.value = '';
-      }
-    });
+        // ============================================================
+        // UPLOAD & OCR
+        // ============================================================
+        function setupUpload(shift) {
+            const fileInput = document.getElementById(`upload${shift}`);
+            const area = document.getElementById(`upload${shift}Area`);
+            const preview = document.getElementById(`preview${shift}`);
 
-    // Mobile back button handling (opsional)
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 768) {
-        sidebar.classList.remove('hidden');
-        chatArea.classList.remove('active');
-      }
-    });
+            area.addEventListener('click', () => fileInput.click());
 
-    // ===== AUTH STATE OBSERVER =====
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setupUserData(user);
-      } else {
-        // User signed out
-        authScreen.classList.remove('hidden');
-        appDiv.classList.add('hidden');
-        currentUser = null;
-        currentUserUid = null;
-        currentPhone = null;
-        activeChatId = null;
-      }
-    });
-  </script>
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    preview.src = ev.target.result;
+                    preview.style.display = 'block';
+                    document.getElementById(`ocrStatus${shift}`).textContent = '📸 Gambar siap, klik Ekstrak Data';
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function runOCR(shift) {
+            const fileInput = document.getElementById(`upload${shift}`);
+            const status = document.getElementById(`ocrStatus${shift}`);
+            const preview = document.getElementById(`preview${shift}`);
+
+            if (!fileInput.files || !fileInput.files[0]) {
+                showToast('Pilih foto struk terlebih dahulu!', 'error');
+                return;
+            }
+
+            const imageFile = fileInput.files[0];
+            status.textContent = '⏳ Memproses OCR...';
+
+            try {
+                const result = await Tesseract.recognize(imageFile, 'ind', {
+                    logger: (m) => {
+                        if (m.status === 'recognizing text') {
+                            status.textContent = `⏳ OCR: ${Math.round(m.progress * 100)}%`;
+                        }
+                    }
+                });
+                const text = result.data.text;
+                status.textContent = `✅ OCR selesai (${text.length} karakter)`;
+                console.log(`OCR Shift ${shift}:`, text);
+
+                // Parse text
+                const parsed = parseOCRText(text);
+                fillShiftData(shift, parsed);
+
+                showToast(`✅ Data Shift ${shift} berhasil diekstrak`, 'success');
+            } catch (err) {
+                console.error(err);
+                status.textContent = '❌ Gagal OCR, coba lagi atau input manual';
+                showToast('❌ Gagal membaca gambar', 'error');
+            }
+        }
+
+        // ============================================================
+        // PARSING OCR
+        // ============================================================
+        function parseOCRText(text) {
+            // Normalize: lowercase, remove extra spaces
+            const clean = text.replace(/\s+/g, ' ').trim();
+            const lines = clean.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+            // Default result
+            const result = {
+                sales: 0,
+                cu: 0,
+                menu: [], // [{label, qty}]
+                ecom: [], // [{label, amount}]
+                expenses: [], // [{desc, amount}]
+            };
+
+            // --- 1. Cari Sales (total penjualan bersih) ---
+            // Pola: "Total Penjualan", "Sales", "Total", dll
+            let salesFound = false;
+            for (let line of lines) {
+                // Cari angka dengan format Rp atau angka ribuan
+                const match = line.match(/(?:Rp|RP|rp|R P)\s*[.:]?\s*([\d.,]+)/);
+                if (match) {
+                    const num = parseNumber(match[1]);
+                    if (num > 0 && !salesFound) {
+                        // asumsikan angka pertama yang cukup besar adalah sales
+                        result.sales = num;
+                        salesFound = true;
+                        break;
+                    }
+                }
+            }
+            // Jika tidak ketemu, cari angka besar di baris yang mengandung kata "total" atau "sales"
+            if (!salesFound) {
+                for (let line of lines) {
+                    if (/total|sales|penjualan/i.test(line)) {
+                        const nums = line.match(/[\d.,]+/g);
+                        if (nums) {
+                            const num = parseNumber(nums[nums.length - 1]);
+                            if (num > 0) {
+                                result.sales = num;
+                                salesFound = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // --- 2. Cari CU (Total Pax) ---
+            for (let line of lines) {
+                if (/pax|cu|customer/i.test(line)) {
+                    const nums = line.match(/[\d.,]+/g);
+                    if (nums) {
+                        const num = parseNumber(nums[nums.length - 1]);
+                        if (num > 0) {
+                            result.cu = Math.round(num);
+                            break;
+                        }
+                    }
+                }
+            }
+            // Jika belum ketemu, cari angka kecil (biasanya CU < 200)
+            if (result.cu === 0) {
+                for (let line of lines) {
+                    const nums = line.match(/\b(\d{1,3})\b/g);
+                    if (nums) {
+                        for (let n of nums) {
+                            const num = parseInt(n);
+                            if (num > 0 && num < 500 && !line.includes('Rp') && !line.includes('rp')) {
+                                result.cu = num;
+                                break;
+                            }
+                        }
+                        if (result.cu > 0) break;
+                    }
+                }
+            }
+
+            // --- 3. Cari Menu ---
+            // Pola: "Nama Menu 5" atau "Nama Menu : 5"
+            const menuKeywords = ['geprek', 'jumbo', 'hemat', 'double', 'chic', 'saos', 'gangnam', 'minerale', 'pucuk', 'sijo',
+                'promo', 'extra'
+            ];
+            for (let line of lines) {
+                // Cari baris yang mengandung keyword menu dan angka
+                const lower = line.toLowerCase();
+                let matched = false;
+                for (let kw of menuKeywords) {
+                    if (lower.includes(kw)) {
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched) continue;
+
+                // Ekstrak angka di baris
+                const nums = line.match(/\b(\d{1,3})\b/g);
+                let qty = 1;
+                if (nums && nums.length > 0) {
+                    // Ambil angka terakhir
+                    qty = parseInt(nums[nums.length - 1]);
+                }
+                // Bersihkan label: hilangkan angka dan tanda baca
+                let label = line.replace(/[\d.,]+/g, '').replace(/[:*\-]/g, '').trim();
+                if (label.length > 2) {
+                    result.menu.push({ label: label, qty: qty });
+                }
+            }
+            // Jika menu tidak ditemukan, beri contoh kosong
+            if (result.menu.length === 0) {
+                // Coba ambil dari baris yang terlihat seperti menu
+                for (let line of lines) {
+                    if (line.length > 3 && line.length < 40 && !line.includes('Rp') && !line.includes('rp')) {
+                        const nums = line.match(/\b(\d{1,3})\b/g);
+                        let qty = 1;
+                        let label = line;
+                        if (nums && nums.length > 0) {
+                            qty = parseInt(nums[nums.length - 1]);
+                            label = line.replace(/[\d.,]+/g, '').replace(/[:*\-]/g, '').trim();
+                        }
+                        if (label.length > 2) {
+                            result.menu.push({ label: label, qty: qty });
+                        }
+                    }
+                }
+            }
+
+            // --- 4. Cari E-Commerce (total nominal) ---
+            const ecomKeywords = ['dana', 'transfer', 'shopee', 'gofood', 'qris', 'qpon', 'tiktok', 'e-commerce', 'ecom'];
+            for (let line of lines) {
+                const lower = line.toLowerCase();
+                let matched = false;
+                for (let kw of ecomKeywords) {
+                    if (lower.includes(kw)) {
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched) continue;
+                const nums = line.match(/[\d.,]+/g);
+                if (nums) {
+                    const num = parseNumber(nums[nums.length - 1]);
+                    if (num > 0) {
+                        let label = line.replace(/[\d.,]+/g, '').replace(/[:*\-]/g, '').trim();
+                        if (label.length < 3) label = 'E-Commerce';
+                        result.ecom.push({ label: label, amount: num });
+                    }
+                }
+            }
+
+            // --- 5. Cari Pengeluaran ---
+            for (let line of lines) {
+                if (/pengeluaran|expense|gas|lpg|belanja|biaya/i.test(line)) {
+                    const nums = line.match(/[\d.,]+/g);
+                    if (nums) {
+                        const num = parseNumber(nums[nums.length - 1]);
+                        if (num > 0) {
+                            let desc = line.replace(/[\d.,]+/g, '').replace(/[:*\-]/g, '').trim();
+                            if (desc.length < 3) desc = 'Pengeluaran';
+                            result.expenses.push({ desc: desc, amount: num });
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        function parseNumber(str) {
+            if (!str) return 0;
+            let cleaned = str.replace(/\./g, '').replace(',', '.');
+            const num = parseFloat(cleaned);
+            return isNaN(num) ? 0 : num;
+        }
+
+        // ============================================================
+        // FILL SHIFT DATA FROM PARSED
+        // ============================================================
+        function fillShiftData(shift, parsed) {
+            if (parsed.sales > 0) setVal(`s${shift}_sales`, parsed.sales);
+            if (parsed.cu > 0) setVal(`s${shift}_cu`, parsed.cu);
+
+            // Menu
+            const menuContainer = document.getElementById(`menu${shift}Container`);
+            menuContainer.innerHTML = '';
+            dynamicCounter[`menu${shift}`] = 0;
+            if (parsed.menu && parsed.menu.length > 0) {
+                parsed.menu.forEach(item => {
+                    addDynamicItem(`menu${shift}`, item.label, item.qty);
+                });
+            } else {
+                addDynamicItem(`menu${shift}`);
+            }
+
+            // E-commerce
+            const ecomContainer = document.getElementById(`ecom${shift}Container`);
+            ecomContainer.innerHTML = '';
+            dynamicCounter[`ecom${shift}`] = 0;
+            if (parsed.ecom && parsed.ecom.length > 0) {
+                parsed.ecom.forEach(item => {
+                    addDynamicItem(`ecom${shift}`, item.label, item.amount);
+                });
+            } else {
+                addDynamicItem(`ecom${shift}`);
+            }
+
+            // Expenses
+            const expContainer = document.getElementById(`expenses${shift}Container`);
+            expContainer.innerHTML = '';
+            expenseCounter[shift] = 0;
+            if (parsed.expenses && parsed.expenses.length > 0) {
+                parsed.expenses.forEach(item => {
+                    addExpense(shift, item.desc, item.amount);
+                });
+            } else {
+                addExpense(shift);
+            }
+        }
+
+        // ============================================================
+        // DYNAMIC ITEMS (Menu & E-Commerce)
+        // ============================================================
+        function addDynamicItem(type, label = '', value = 0) {
+            // type: menu1, menu2, ecom1, ecom2
+            const container = document.getElementById(`${type}Container`);
+            if (!container) return;
+
+            const counter = dynamicCounter[type] || 0;
+            dynamicCounter[type] = counter + 1;
+            const idx = dynamicCounter[type];
+            const isMenu = type.startsWith('menu');
+            const isEcom = type.startsWith('ecom');
+            const shift = type.slice(-1);
+            const id = `${type}_${idx}`;
+
+            const div = document.createElement('div');
+            div.className = 'dynamic-item';
+            div.id = id;
+
+            const labelInput = document.createElement('input');
+            labelInput.type = 'text';
+            labelInput.placeholder = isMenu ? 'Nama Menu' : 'Metode';
+            labelInput.value = label || '';
+            labelInput.style.flex = '2';
+            labelInput.style.minWidth = '100px';
+
+            const valueInput = document.createElement('input');
+            valueInput.type = 'number';
+            valueInput.placeholder = isMenu ? 'Qty' : 'Rp';
+            valueInput.value = value || 0;
+            valueInput.min = 0;
+            valueInput.step = 1;
+            valueInput.style.width = '80px';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'btn-remove';
+            removeBtn.textContent = '✕';
+            removeBtn.onclick = () => {
+                if (container.children.length > 1) {
+                    div.remove();
+                } else {
+                    showToast('Minimal satu item', 'error');
+                }
+            };
+
+            div.appendChild(labelInput);
+            div.appendChild(valueInput);
+            div.appendChild(removeBtn);
+            container.appendChild(div);
+        }
+
+        function getDynamicItems(type) {
+            const container = document.getElementById(`${type}Container`);
+            if (!container) return [];
+            const items = [];
+            container.querySelectorAll('.dynamic-item').forEach(div => {
+                const inputs = div.querySelectorAll('input');
+                if (inputs.length >= 2) {
+                    const label = inputs[0].value.trim() || '(tanpa nama)';
+                    const val = parseFloat(inputs[1].value) || 0;
+                    if (val > 0 || label !== '(tanpa nama)') {
+                        items.push({ label, value: val });
+                    }
+                }
+            });
+            return items;
+        }
+
+        function setDynamicItems(type, data) {
+            const container = document.getElementById(`${type}Container`);
+            if (!container) return;
+            container.innerHTML = '';
+            dynamicCounter[type] = 0;
+            if (!data || data.length === 0) {
+                addDynamicItem(type);
+                return;
+            }
+            data.forEach(item => {
+                addDynamicItem(type, item.label, item.value);
+            });
+        }
+
+        // ============================================================
+        // EXPENSES
+        // ============================================================
+        function addExpense(shift, desc = '', amount = 0) {
+            const container = document.getElementById(`expenses${shift}Container`);
+            if (!container) return;
+            expenseCounter[shift] = (expenseCounter[shift] || 0) + 1;
+            const idx = expenseCounter[shift];
+            const row = document.createElement('div');
+            row.className = 'expense-row';
+            row.id = `exp_${shift}_${idx}`;
+            row.innerHTML = `
+                <div class="form-group">
+                    <label>Jenis</label>
+                    <input type="text" id="exp_desc_${shift}_${idx}" value="${escapeHtml(desc)}" placeholder="misal: GAS LPG" />
+                </div>
+                <div class="form-group">
+                    <label>Jumlah (Rp)</label>
+                    <input type="number" id="exp_amount_${shift}_${idx}" value="${amount || 0}" min="0" step="1" />
+                </div>
+                <button class="btn-remove-exp" onclick="removeExpense('${shift}', ${idx})">✕ Hapus</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeExpense(shift, idx) {
+            const el = document.getElementById(`exp_${shift}_${idx}`);
+            if (el) el.remove();
+        }
+
+        function getExpenses(shift) {
+            const container = document.getElementById(`expenses${shift}Container`);
+            const rows = container.querySelectorAll('.expense-row');
+            const result = [];
+            rows.forEach(row => {
+                const descInput = row.querySelector('input[type="text"]');
+                const amountInput = row.querySelector('input[type="number"]');
+                if (descInput && amountInput) {
+                    const desc = descInput.value.trim() || '(tanpa nama)';
+                    const amount = parseFloat(amountInput.value) || 0;
+                    if (amount > 0 || desc !== '(tanpa nama)') {
+                        result.push({ desc, amount });
+                    }
+                }
+            });
+            return result;
+        }
+
+        function setExpenses(shift, data) {
+            const container = document.getElementById(`expenses${shift}Container`);
+            container.innerHTML = '';
+            expenseCounter[shift] = 0;
+            if (!data || data.length === 0) {
+                addExpense(shift);
+                return;
+            }
+            data.forEach(item => {
+                addExpense(shift, item.desc, item.amount);
+            });
+        }
+
+        // ============================================================
+        // UTILITY
+        // ============================================================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function getVal(id) {
+            const el = document.getElementById(id);
+            if (!el) return 0;
+            const v = parseFloat(el.value);
+            return isNaN(v) ? 0 : v;
+        }
+
+        function getValInt(id) { return Math.round(getVal(id)); }
+
+        function setVal(id, val) {
+            const el = document.getElementById(id);
+            if (el) el.value = val;
+        }
+
+        function getText(id) {
+            const el = document.getElementById(id);
+            return el ? el.value.trim() : '';
+        }
+
+        function getShiftData(shift) {
+            const menuItems = getDynamicItems(`menu${shift}`);
+            const ecomItems = getDynamicItems(`ecom${shift}`);
+            return {
+                sales: getValInt(`s${shift}_sales`),
+                cu: getValInt(`s${shift}_cu`),
+                menu: menuItems,
+                ecom: ecomItems,
+                expenses: getExpenses(shift),
+            };
+        }
+
+        function setShiftData(shift, data) {
+            if (!data) return;
+            setVal(`s${shift}_sales`, data.sales || 0);
+            setVal(`s${shift}_cu`, data.cu || 0);
+            setDynamicItems(`menu${shift}`, data.menu || []);
+            setDynamicItems(`ecom${shift}`, data.ecom || []);
+            setExpenses(shift, data.expenses || []);
+        }
+
+        // ============================================================
+        // COMBINE SHIFTS
+        // ============================================================
+        function combineShifts(s1, s2) {
+            const totalSales = (s1.sales || 0) + (s2.sales || 0);
+            const totalCu = (s1.cu || 0) + (s2.cu || 0);
+            const avg = totalCu > 0 ? totalSales / totalCu : 0;
+
+            const menuCombined = [...(s1.menu || []), ...(s2.menu || [])];
+            const ecomCombined = [...(s1.ecom || []), ...(s2.ecom || [])];
+            const expensesCombined = [...(s1.expenses || []), ...(s2.expenses || [])];
+            const totalExpenses = expensesCombined.reduce((sum, e) => sum + (e.amount || 0), 0);
+
+            return { totalSales, totalCu, avg, menu: menuCombined, ecom: ecomCombined, expenses: expensesCombined,
+                totalExpenses, s1, s2 };
+        }
+
+        // ============================================================
+        // GENERATE REPORT
+        // ============================================================
+        function generateReport() {
+            const s1 = getShiftData('1');
+            const s2 = getShiftData('2');
+            const combined = combineShifts(s1, s2);
+
+            const dateStr = getDateString();
+            const dayOfMonth = getDayOfMonth();
+            const daysInMonth = getDaysInMonth();
+
+            const allReports = getAllReports();
+            const prevDate = getPreviousDate(dateStr);
+            const prevReport = allReports[prevDate] || null;
+            const prevTotalSales = prevReport ? prevReport.monthlyTotalSales || 0 : 0;
+            const prevTotalCu = prevReport ? prevReport.monthlyTotalCu || 0 : 0;
+
+            const totalSalesBulanan = combined.totalSales + prevTotalSales;
+            const totalCuBulanan = combined.totalCu + prevTotalCu;
+            const avgOmset = dayOfMonth > 0 ? totalSalesBulanan / dayOfMonth : 0;
+            const avgCu = dayOfMonth > 0 ? totalCuBulanan / dayOfMonth : 0;
+            const estimasiSelesBulanan = avgOmset * daysInMonth;
+
+            // Build menu lines
+            const menuMap = {};
+            combined.menu.forEach(item => {
+                const key = item.label.trim().toLowerCase();
+                if (menuMap[key]) {
+                    menuMap[key] += item.value;
+                } else {
+                    menuMap[key] = item.value;
+                }
+            });
+            const menuLines = Object.entries(menuMap)
+                .map(([label, qty]) => `»${label.padEnd(28)} : ${qty}`)
+                .join('\n');
+
+            // Ecom lines
+            const ecomLines = combined.ecom.map(item =>
+                `${item.label.padEnd(18)}: Rp. ${formatNumber(item.value)}`
+            ).join('\n');
+
+            // Expenses
+            const expenseLines = combined.expenses.map(e =>
+                `- ${e.desc} : Rp. ${formatNumber(e.amount)}`
+            ).join('\n');
+
+            const team = getText('teamInput') || '-';
+            const weather = getText('weatherInput') || '(isi manual)';
+            const waste = getText('wasteInput') || '(isi manual)';
+            const dateDisplay = formatDateDisplay(dateStr);
+            const dayName = getDayName(dateStr);
+
+            let report = '';
+            report += `🐓 *LAPORAN SELES GEPREKINAJA SITANGGAL BREBES* 🐓\n`;
+            report += `*${dateDisplay}*\n\n`;
+            report += `GO DI TGL : ${dayOfMonth}\n`;
+            report += `GO DAY : ${dayName}\n`;
+            report += `===========================\n\n`;
+            report += `🗂️ 𝑳𝑨𝑷𝑶𝑹𝑨𝑵 𝑺𝑨𝑳𝑬𝑺 𝑩𝑼𝑳𝑨𝑵𝑨𝑵 \n\n`;
+            report += `»𝑻𝑨𝑹𝑮𝑬𝑻 𝑺𝑨𝑳𝑬𝑺 𝑩𝑼𝑳𝑨𝑵𝑨𝑵:  RP.100.000.000\n`;
+            report += `»𝑬𝑺𝑻𝑰𝑴𝑨𝑺𝑰 𝑺𝑨𝑳𝑬𝑺 _𝑩𝑼𝑳𝑨𝑵𝑨N_ : ${formatNumber(estimasiSelesBulanan)}\n`;
+            report += `»𝑻𝑶𝑻𝑨𝑳 𝑺𝑨𝑳𝑬𝑺 𝑩𝑼𝑳𝑨𝑵𝑨𝑵:Rp. ${formatNumber(totalSalesBulanan)}\n\n`;
+            report += `𝑻𝑶𝑻𝑨𝑳 𝑪𝑼    : ${totalCuBulanan}\n`;
+            report += `𝑨𝑽𝑮 𝑶𝑴𝑺𝑬𝑻 : Rp. ${formatNumber(avgOmset)}\n`;
+            report += `𝑨𝑽𝑮 𝑪𝑼        : ${Math.round(avgCu)}\n\n`;
+            report += `==========================\n\n`;
+            report += `🗂️ 𝑳𝑨𝑷𝑶𝑹𝑨𝑵 𝑺𝑨𝑳𝑬𝑺 𝑯𝑨𝑹𝑰𝑨𝑵: \n\n`;
+            report += `𝑻𝑨𝑹𝑮𝑬𝑻 𝑺𝑨𝑳𝑬𝑺 𝑯𝑨𝑹𝑰𝑨𝑵:\n`;
+            report += `𝑹𝑷. 5.000.000\n\n`;
+            report += `𝑺𝑨𝑳𝑬𝑺: Rp.${formatNumber(combined.totalSales)}\n`;
+            report += `𝑪𝑼      : ${combined.totalCu}\n`;
+            report += `𝑨𝑽𝑮    : ${Math.round(combined.avg)}\n`;
+            report += `========================\n\n`;
+            report += `🍱 𝑴𝑬𝑵𝑼 𝑩𝑨𝑹𝑼 𝑮𝑬𝑷𝑹𝑬𝑲𝑰𝑵:\n`;
+            report += `${menuLines || '(tidak ada menu)'}\n\n`;
+            report += `===========================\n\n`;
+            report += `📱𝐄-𝐂𝐎𝐌𝐌𝐄𝐑𝐂𝐄:\n`;
+            report += `${ecomLines || '(tidak ada e-commerce)'}\n\n`;
+            report += `=======================\n\n`;
+            report += `📤𝐏𝐄𝐍𝐆𝐄𝐋𝐔𝐀𝐑𝐀𝐍:\n`;
+            report += `${expenseLines || '(tidak ada pengeluaran)'}\n\n`;
+            report += `𝐓𝐎𝐓𝐀𝐋 𝐏𝐄𝐍𝐆𝐄𝐋𝐔𝐀𝐑𝐀𝐍⬇️\n`;
+            report += `𝐑𝐏. ${formatNumber(combined.totalExpenses)}\n`;
+            report += `======================\n\n`;
+            report += `🗑️𝐖𝐀𝐒𝐓𝐄:\n`;
+            report += `${waste}\n\n`;
+            report += `====================\n\n`;
+            report += `✨𝐂𝐔𝐀𝐂𝐀:\n`;
+            report += `${weather}\n\n`;
+            report += `=======================\n\n`;
+            report += `👩🏻‍🍳𝐓𝐈𝐌 𝐘𝐀𝐍𝐆 𝐁𝐄𝐑𝐓𝐔𝐆𝐀𝐒 𝐇𝐀𝐑𝐈 *INI*\n`;
+            report += `${team}\n\n`;
+            report += `𝗮𝗹𝗵𝗮𝗺𝗱𝘂𝗹𝗹𝗶𝗹𝗮𝗵, 𝘁𝗲𝗿𝗶𝗺𝗮𝗸𝗮𝘀𝗶𝗵 𝗱𝗮𝗻 𝗵𝗮𝘁𝗶 𝗵𝗮𝘁𝗶 𝗱𝗶𝗷𝗮𝗹𝗮𝗻😊🙏🏻`;
+
+            document.getElementById('reportOutput').textContent = report;
+        }
+
+        // ============================================================
+        // SAVE / LOAD / HISTORY
+        // ============================================================
+        function getAllReports() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : {};
+            } catch { return {}; }
+        }
+
+        function saveReports(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function saveReport() {
+            const dateStr = getDateString();
+            if (!dateStr) {
+                showToast('Pilih tanggal terlebih dahulu!', 'error');
+                return;
+            }
+            const s1 = getShiftData('1');
+            const s2 = getShiftData('2');
+            const combined = combineShifts(s1, s2);
+
+            const allReports = getAllReports();
+            const prevDate = getPreviousDate(dateStr);
+            const prevReport = allReports[prevDate] || null;
+            const prevTotalSales = prevReport ? prevReport.monthlyTotalSales || 0 : 0;
+            const prevTotalCu = prevReport ? prevReport.monthlyTotalCu || 0 : 0;
+            const dayOfMonth = getDayOfMonth();
+            const daysInMonth = getDaysInMonth();
+            const totalSalesBulanan = combined.totalSales + prevTotalSales;
+            const totalCuBulanan = combined.totalCu + prevTotalCu;
+            const avgOmset = dayOfMonth > 0 ? totalSalesBulanan / dayOfMonth : 0;
+            const avgCu = dayOfMonth > 0 ? totalCuBulanan / dayOfMonth : 0;
+            const estimasiSelesBulanan = avgOmset * daysInMonth;
+
+            const reportData = {
+                date: dateStr,
+                dayOfMonth,
+                daysInMonth,
+                shift1: s1,
+                shift2: s2,
+                combined: {
+                    totalSales: combined.totalSales,
+                    totalCu: combined.totalCu,
+                    avg: combined.avg,
+                    menu: combined.menu,
+                    ecom: combined.ecom,
+                    expenses: combined.expenses,
+                    totalExpenses: combined.totalExpenses,
+                },
+                monthly: {
+                    prevTotalSales,
+                    prevTotalCu,
+                    totalSalesBulanan,
+                    totalCuBulanan,
+                    avgOmset,
+                    avgCu,
+                    estimasiSelesBulanan,
+                },
+                manual: {
+                    team: getText('teamInput'),
+                    weather: getText('weatherInput'),
+                    waste: getText('wasteInput'),
+                },
+                timestamp: Date.now(),
+            };
+
+            allReports[dateStr] = reportData;
+            saveReports(allReports);
+            showToast('✅ Laporan berhasil disimpan!', 'success');
+            loadHistory();
+            generateReport();
+        }
+
+        function loadToday() {
+            const dateStr = getDateString();
+            if (!dateStr) return;
+            loadReportByDate(dateStr);
+        }
+
+        function loadReportByDate(dateStr) {
+            const allReports = getAllReports();
+            const data = allReports[dateStr];
+            if (!data) {
+                showToast(`Belum ada laporan untuk ${dateStr}`, 'error');
+                return;
+            }
+            setVal('reportDate', data.date);
+            setShiftData('1', data.shift1);
+            setShiftData('2', data.shift2);
+            setVal('teamInput', data.manual?.team || '');
+            setVal('weatherInput', data.manual?.weather || '');
+            setVal('wasteInput', data.manual?.waste || '');
+            setVal('dayOfMonth', data.dayOfMonth || getDayOfMonth());
+            setVal('daysInMonth', data.daysInMonth || getDaysInMonth());
+            showToast(`📂 Laporan ${dateStr} dimuat`, 'success');
+            generateReport();
+        }
+
+        function getPreviousDate(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            d.setDate(d.getDate() - 1);
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        function loadHistory() {
+            const allReports = getAllReports();
+            const container = document.getElementById('historyList');
+            const dates = Object.keys(allReports).sort((a, b) => b.localeCompare(a));
+            if (dates.length === 0) {
+                container.innerHTML = `<div class="empty-state">Belum ada data tersimpan.</div>`;
+                return;
+            }
+            let html = '';
+            dates.forEach(date => {
+                const data = allReports[date];
+                const sales = data.combined?.totalSales || 0;
+                const cu = data.combined?.totalCu || 0;
+                html += `
+                    <div class="history-item">
+                        <div>
+                            <span class="h-date">📅 ${date}</span>
+                            <span style="margin-left:10px;font-size:13px;color:#6b6b7a;">
+                                Sales: <span class="h-sales">Rp ${formatNumber(sales)}</span>
+                                · CU: <span class="h-cu">${cu}</span>
+                            </span>
+                        </div>
+                        <div class="h-actions">
+                            <button class="load-btn" onclick="loadReportByDate('${date}')" title="Muat">📂</button>
+                            <button class="del-btn" onclick="deleteReport('${date}')" title="Hapus">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function deleteReport(dateStr) {
+            if (!confirm(`Hapus laporan ${dateStr}?`)) return;
+            const allReports = getAllReports();
+            delete allReports[dateStr];
+            saveReports(allReports);
+            loadHistory();
+            showToast(`🗑️ Laporan ${dateStr} dihapus`, 'error');
+        }
+
+        // ============================================================
+        // COPY / CLEAR
+        // ============================================================
+        function copyReport() {
+            const text = document.getElementById('reportOutput').textContent;
+            if (!text || text.includes('Belum ada laporan')) {
+                showToast('Tidak ada laporan untuk disalin', 'error');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('📋 Laporan disalin ke clipboard!', 'success');
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+                showToast('📋 Laporan disalin!', 'success');
+            });
+        }
+
+        function clearAll() {
+            if (!confirm('Reset semua input? Data yang belum disimpan akan hilang.')) return;
+            setVal('s1_sales', 0);
+            setVal('s1_cu', 0);
+            setVal('s2_sales', 0);
+            setVal('s2_cu', 0);
+            setDynamicItems('menu1', []);
+            setDynamicItems('menu2', []);
+            setDynamicItems('ecom1', []);
+            setDynamicItems('ecom2', []);
+            setExpenses('1', []);
+            setExpenses('2', []);
+            setVal('teamInput', '');
+            setVal('weatherInput', '');
+            setVal('wasteInput', '');
+            document.getElementById('reportOutput').innerHTML =
+                `<span class="dim">Belum ada laporan. Ekstrak data dari struk lalu klik Generate.</span>`;
+            showToast('🗑️ Semua input direset', 'error');
+        }
+
+        // ============================================================
+        // FORMAT HELPERS
+        // ============================================================
+        function formatNumber(n) {
+            if (n === undefined || n === null || isNaN(n)) return '0';
+            return Math.round(n).toLocaleString('id-ID');
+        }
+
+        function formatDateDisplay(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const day = parseInt(parts[2]);
+            const month = months[parseInt(parts[1]) - 1];
+            return `${day}.${month}.${parts[0]}`;
+        }
+
+        function getDayName(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            return days[d.getDay()];
+        }
+
+        // ============================================================
+        // TOAST
+        // ============================================================
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 2800);
+        }
+
+        // ============================================================
+        // KEYBOARD SHORTCUT
+        // ============================================================
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                generateReport();
+            }
+        });
+    </script>
+
 </body>
-</html>
+  </html>
