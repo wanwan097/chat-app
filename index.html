@@ -1,1484 +1,459 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OCR Laporan Sales - Geprek Inaja</title>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js">
-    </script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            background: #f6f3ef;
-            padding: 20px 16px 40px;
-            color: #1e1e2a;
-        }
-        .app-container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        .app-header {
-            text-align: center;
-            padding: 14px 0 18px;
-            border-bottom: 3px solid #e85d3a;
-            margin-bottom: 24px;
-        }
-        .app-header h1 {
-            font-size: 26px;
-            font-weight: 700;
-        }
-        .app-header h1 span {
-            color: #e85d3a;
-        }
-        .app-header .sub {
-            font-size: 14px;
-            color: #6b6b7a;
-            margin-top: 4px;
-        }
-        .card {
-            background: #fff;
-            border-radius: 20px;
-            padding: 20px 18px;
-            margin-bottom: 22px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-            border: 1px solid #eeeae5;
-        }
-        .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #1e1e2a;
-        }
-        .card-title .badge {
-            background: #e85d3a;
-            color: #fff;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 0 12px;
-            border-radius: 40px;
-            line-height: 24px;
-        }
-        .badge.shift2 {
-            background: #2a6f97;
-        }
-        .form-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 14px 18px;
-            margin-bottom: 12px;
-        }
-        .form-group {
-            flex: 1 1 180px;
-            min-width: 140px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #3d3d4a;
-            margin-bottom: 4px;
-        }
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1.5px solid #ddd8d1;
-            border-radius: 12px;
-            font-size: 15px;
-            background: #faf8f6;
-            transition: 0.2s;
-            outline: none;
-            color: #1e1e2a;
-            font-family: inherit;
-        }
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: #e85d3a;
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(232, 93, 58, 0.12);
-        }
-        .form-group input[type="number"] {
-            -moz-appearance: textfield;
-        }
-        .form-group input[type="number"]::-webkit-outer-spin-button,
-        .form-group input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-        }
-        .input-rupiah {
-            position: relative;
-        }
-        .input-rupiah input {
-            padding-left: 32px;
-        }
-        .input-rupiah .rp {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-weight: 700;
-            color: #6b6b7a;
-            font-size: 14px;
-        }
-        .form-divider {
-            border: none;
-            border-top: 2px dashed #e8e2da;
-            margin: 18px 0 16px;
-        }
-        .upload-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-        .upload-area {
-            border: 2px dashed #ddd8d1;
-            border-radius: 16px;
-            padding: 12px;
-            text-align: center;
-            background: #faf8f6;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .upload-area:hover {
-            border-color: #e85d3a;
-            background: #fff5f0;
-        }
-        .upload-area .label {
-            font-weight: 600;
-            color: #e85d3a;
-            display: block;
-            margin-bottom: 4px;
-            font-size: 14px;
-        }
-        .upload-area .label.shift2-label {
-            color: #2a6f97;
-        }
-        .upload-area img {
-            max-width: 100%;
-            max-height: 120px;
-            border-radius: 8px;
-            margin-top: 6px;
-        }
-        .upload-area input[type="file"] {
-            display: none;
-        }
-        .upload-area .status {
-            font-size: 13px;
-            color: #6b6b7a;
-            margin-top: 4px;
-        }
-        .upload-area .spinner {
-            display: none;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #ddd;
-            border-top-color: #e85d3a;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 4px;
-        }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 10px 24px;
-            border: none;
-            border-radius: 40px;
-            font-weight: 700;
-            font-size: 15px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .btn-primary {
-            background: #e85d3a;
-            color: #fff;
-        }
-        .btn-primary:hover {
-            background: #d14d2c;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(232, 93, 58, 0.35);
-        }
-        .btn-secondary {
-            background: #e8e2da;
-            color: #2d2d3a;
-        }
-        .btn-secondary:hover {
-            background: #d5cec6;
-        }
-        .btn-success {
-            background: #2a9d8f;
-            color: #fff;
-        }
-        .btn-success:hover {
-            background: #21867a;
-        }
-        .btn-sm {
-            padding: 6px 16px;
-            font-size: 13px;
-        }
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 12px;
-        }
-        .report-preview {
-            background: #fcf9f6;
-            border-radius: 16px;
-            padding: 20px 18px;
-            border: 2px solid #e8e2da;
-            font-size: 14px;
-            line-height: 1.7;
-            white-space: pre-wrap;
-            font-family: 'Courier New', monospace;
-            overflow-x: auto;
-            max-height: 600px;
-            overflow-y: auto;
-        }
-        .history-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .history-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 14px;
-            border-bottom: 1px solid #eeeae5;
-            border-radius: 10px;
-        }
-        .history-item:hover {
-            background: #f8f5f1;
-        }
-        .history-item .h-date {
-            font-weight: 600;
-        }
-        .history-item .h-sales {
-            color: #e85d3a;
-            font-weight: 700;
-        }
-        .history-item .h-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .history-item .h-actions button {
-            background: none;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 30px;
-            transition: 0.2s;
-        }
-        .history-item .h-actions .del-btn:hover {
-            background: #fce4e0;
-            color: #c0392b;
-        }
-        .history-item .h-actions .load-btn:hover {
-            background: #e0f0ee;
-            color: #1a7a6a;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 30px 10px;
-            color: #9a8f84;
-            font-size: 15px;
-        }
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e1e2a;
-            color: #fff;
-            padding: 12px 28px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 14px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-            opacity: 0;
-            pointer-events: none;
-            transition: 0.3s;
-            z-index: 999;
-        }
-        .toast.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .toast.success {
-            background: #2a9d8f;
-        }
-        .toast.error {
-            background: #e85d3a;
-        }
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .dynamic-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #f8f5f1;
-            padding: 4px 10px 4px 14px;
-            border-radius: 40px;
-            border: 1px solid #e8e2da;
-            margin-bottom: 6px;
-            flex-wrap: wrap;
-        }
-        .dynamic-item input {
-            width: 80px;
-            padding: 6px 8px;
-            border: 1px solid #d5cec6;
-            border-radius: 30px;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 600;
-            background: #fff;
-            outline: none;
-        }
-        .dynamic-item input:focus {
-            border-color: #e85d3a;
-        }
-        .dynamic-item .btn-remove {
-            background: none;
-            border: none;
-            color: #a05a4a;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 0 4px;
-        }
-        .dynamic-item .btn-remove:hover {
-            color: #c0392b;
-        }
-        .expense-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px 14px;
-            align-items: center;
-            background: #f8f5f1;
-            padding: 10px 14px;
-            border-radius: 16px;
-            border: 1px solid #e8e2da;
-            margin-bottom: 8px;
-        }
-        .expense-row .form-group {
-            flex: 1 1 120px;
-            min-width: 100px;
-        }
-        .expense-row .form-group label {
-            font-size: 12px;
-        }
-        .expense-row .form-group input {
-            padding: 8px 10px;
-            font-size: 14px;
-        }
-        .btn-remove-exp {
-            background: #f0e8e0;
-            border: none;
-            border-radius: 40px;
-            padding: 6px 14px;
-            font-weight: 700;
-            color: #7a5a4a;
-            cursor: pointer;
-            font-size: 13px;
-            transition: 0.2s;
-            margin-left: auto;
-        }
-        .btn-remove-exp:hover {
-            background: #e85d3a;
-            color: #fff;
-        }
-        @media (max-width: 700px) {
-            .upload-grid {
-                grid-template-columns: 1fr;
-            }
-            .dynamic-item {
-                flex-wrap: wrap;
-            }
-            .dynamic-item input {
-                width: 60px;
-            }
-            .expense-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .btn-remove-exp {
-                margin-left: 0;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kasir Kasen</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+    padding: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 20px; margin-bottom: 12px; color: #333; }
+
+  .status-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px; border-radius: 8px; margin-bottom: 12px;
+    font-size: 13px; background: #fff;
+  }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #e74c3c; transition: background .3s;
+  }
+  .dot.connected { background: #2ecc71; }
+
+  .btn {
+    padding: 10px 16px; border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: opacity .2s;
+  }
+  .btn:active { opacity: .7; }
+  .btn-primary { background: #3498db; color: #fff; }
+  .btn-success { background: #2ecc71; color: #fff; }
+  .btn-danger  { background: #e74c3c; color: #fff; }
+  .btn-sm      { padding: 6px 10px; font-size: 12px; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  .products {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px; margin-bottom: 16px;
+  }
+  .product-card {
+    background: #fff; border-radius: 10px; padding: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    cursor: pointer; transition: transform .1s;
+  }
+  .product-card:active { transform: scale(.97); }
+  .product-card .name { font-size: 13px; font-weight: 600; color: #333; }
+  .product-card .price { font-size: 12px; color: #888; margin-top: 4px; }
+
+  .cart {
+    background: #fff; border-radius: 10px; padding: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 12px;
+  }
+  .cart h2 { font-size: 15px; margin-bottom: 8px; }
+  .cart-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px;
+  }
+  .cart-item:last-child { border-bottom: none; }
+  .cart-item .info { flex: 1; }
+  .cart-item .info .sub { font-size: 11px; color: #999; }
+  .cart-item .actions { display: flex; gap: 4px; }
+
+  .total {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px; background: #333; color: #fff;
+    border-radius: 10px; margin-bottom: 12px; font-size: 16px;
+  }
+
+  .action-buttons { display: flex; gap: 8px; }
+  .action-buttons .btn { flex: 1; }
+
+  .log {
+    margin-top: 12px; padding: 8px; background: #000; color: #0f0;
+    font-family: monospace; font-size: 11px; border-radius: 8px;
+    max-height: 120px; overflow-y: auto;
+  }
+</style>
 </head>
 <body>
 
-    <!-- Toast -->
-    <div id="toast" class="toast"></div>
+<h1>🧾 Kasir Kasen</h1>
 
-    <div class="app-container">
+<!-- Status Printer -->
+<div class="status-bar">
+  <div class="dot" id="statusDot"></div>
+  <span id="statusText">Printer belum terhubung</span>
+  <button class="btn btn-primary btn-sm" id="btnConnect" onclick="connectPrinter()">
+    Connect
+  </button>
+</div>
 
-        <!-- HEADER -->
-        <header class="app-header">
-            <h1>🐓 <span>GEPREK</span>INAJA</h1>
-            <div class="sub">OCR Laporan Sales • 4 Foto (2 per Shift)</div>
-        </header>
+<!-- Daftar Produk -->
+<div class="products" id="productList"></div>
 
-        <!-- DATE -->
-        <div class="card">
-            <div class="form-row">
-                <div class="form-group" style="flex:2;">
-                    <label>📅 Tanggal Laporan</label>
-                    <input type="date" id="reportDate" />
-                </div>
-                <div class="form-group" style="flex:1;">
-                    <label>📆 Hari ke-</label>
-                    <input type="number" id="dayOfMonth" min="1" max="31" placeholder="1" />
-                </div>
-                <div class="form-group" style="flex:1;">
-                    <label>📆 Total Hari Bulan Ini</label>
-                    <input type="number" id="daysInMonth" min="28" max="31" placeholder="30" />
-                </div>
-            </div>
-        </div>
+<!-- Keranjang -->
+<div class="cart">
+  <h2>🛒 Keranjang</h2>
+  <div id="cartItems">
+    <div style="color:#aaa; font-size:13px;">Belum ada item</div>
+  </div>
+</div>
 
-        <!-- UPLOAD 4 FOTO -->
-        <div class="card">
-            <div class="card-title">📸 Upload 4 Foto Struk</div>
-            <div class="upload-grid">
-                <!-- S1-1 -->
-                <div class="upload-area" id="uploadS1_1Area">
-                    <span class="label">🟠 S1 - Foto 1 (atas)</span>
-                    <input type="file" id="uploadS1_1" accept="image/*" />
-                    <img id="previewS1_1" style="display:none;" alt="Preview" />
-                    <div class="status" id="statusS1_1">Belum ada</div>
-                    <div class="spinner" id="spinnerS1_1"></div>
-                </div>
-                <!-- S1-2 -->
-                <div class="upload-area" id="uploadS1_2Area">
-                    <span class="label">🟠 S1 - Foto 2 (bawah)</span>
-                    <input type="file" id="uploadS1_2" accept="image/*" />
-                    <img id="previewS1_2" style="display:none;" alt="Preview" />
-                    <div class="status" id="statusS1_2">Belum ada</div>
-                    <div class="spinner" id="spinnerS1_2"></div>
-                </div>
-                <!-- S2-1 -->
-                <div class="upload-area" id="uploadS2_1Area">
-                    <span class="label shift2-label">🔵 S2 - Foto 1 (atas)</span>
-                    <input type="file" id="uploadS2_1" accept="image/*" />
-                    <img id="previewS2_1" style="display:none;" alt="Preview" />
-                    <div class="status" id="statusS2_1">Belum ada</div>
-                    <div class="spinner" id="spinnerS2_1"></div>
-                </div>
-                <!-- S2-2 -->
-                <div class="upload-area" id="uploadS2_2Area">
-                    <span class="label shift2-label">🔵 S2 - Foto 2 (bawah)</span>
-                    <input type="file" id="uploadS2_2" accept="image/*" />
-                    <img id="previewS2_2" style="display:none;" alt="Preview" />
-                    <div class="status" id="statusS2_2">Belum ada</div>
-                    <div class="spinner" id="spinnerS2_2"></div>
-                </div>
-            </div>
+<!-- Total -->
+<div class="total">
+  <span>TOTAL</span>
+  <span id="totalDisplay">Rp 0</span>
+</div>
 
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="runOCRAll()">🔍 Ekstrak & Gabung Semua</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('uploadS1_1').click()">📂 S1-1</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('uploadS1_2').click()">📂 S1-2</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('uploadS2_1').click()">📂 S2-1</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('uploadS2_2').click()">📂 S2-2</button>
-            </div>
-            <div style="font-size:13px;color:#6b6b7a;margin-top:8px;">
-                ⚡ OCR semua foto bisa memakan waktu 1-2 menit. Tunggu hingga selesai.
-            </div>
-        </div>
+<!-- Tombol Aksi -->
+<div class="action-buttons">
+  <button class="btn btn-danger" onclick="clearCart()">Hapus Semua</button>
+  <button class="btn btn-success" id="btnPrint" onclick="cetakStruk()" disabled>
+    🖨️ Cetak Struk
+  </button>
+</div>
 
-        <!-- HASIL GABUNGAN -->
-        <div class="card">
-            <div class="card-title">
-                <span class="badge">📊 Data Gabungan Akhir</span>
-                <span style="font-size:14px;font-weight:400;color:#6b6b7a;">(S1 + S2, bisa diedit manual)</span>
-            </div>
+<!-- Log -->
+<div class="log" id="log"></div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label>💰 Total Penjualan Bersih</label>
-                    <div class="input-rupiah">
-                        <span class="rp">Rp</span>
-                        <input type="number" id="totalSales" step="1" placeholder="0" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>🧑‍🤝‍🧑 Total CU / Pax</label>
-                    <input type="number" id="totalCu" step="1" placeholder="0" />
-                </div>
-            </div>
+<script>
+// ============================================================
+// 1. DATA PRODUK (ganti sesuai kebutuhan)
+// ============================================================
+const PRODUCTS = [
+  { id: 1, nama: 'Indomie Goreng', harga: 3500 },
+  { id: 2, nama: 'Teh Botol Sosro', harga: 5000 },
+  { id: 3, nama: 'Kopi Kapal Api', harga: 2000 },
+  { id: 4, nama: 'Aqua 600ml', harga: 4000 },
+  { id: 5, nama: 'Roti Tawar', harga: 15000 },
+  { id: 6, nama: 'Mie Sedaap', harga: 3200 },
+  { id: 7, nama: 'Biskuit Roma', harga: 8500 },
+  { id: 8, nama: 'Susu Ultra 250ml', harga: 6500 },
+];
 
-            <div style="font-weight:600;font-size:15px;margin:12px 0 8px;">🍱 Menu Terjual (gabungan)</div>
-            <div id="menuContainer"></div>
-            <button class="btn btn-secondary btn-sm" onclick="addDynamicItem('menu')" style="margin-top:6px;">+ Tambah Menu</button>
+// ============================================================
+// 2. STATE
+// ============================================================
+let cart = [];           // { id, nama, harga, qty }
+let device = null;
+let characteristic = null;
+let isConnected = false;
 
-            <div style="font-weight:600;font-size:15px;margin:16px 0 8px;">📱 E-Commerce (gabungan) — total nominal</div>
-            <div id="ecomContainer"></div>
-            <button class="btn btn-secondary btn-sm" onclick="addDynamicItem('ecom')" style="margin-top:6px;">+ Tambah E-Commerce</button>
-
-            <div style="font-weight:600;font-size:15px;margin:16px 0 8px;">📤 Pengeluaran (gabungan)</div>
-            <div id="expensesContainer"></div>
-            <button class="btn btn-secondary btn-sm" onclick="addExpense()" style="margin-top:6px;">+ Tambah Pengeluaran</button>
-        </div>
-
-        <!-- TEAM / WEATHER / WASTE -->
-        <div class="card">
-            <div class="card-title">👩🏻‍🍳 Tim &amp; Catatan</div>
-            <div class="form-row">
-                <div class="form-group" style="flex:2;">
-                    <label>👥 Tim bertugas (Shift 1 + 2 digabung)</label>
-                    <input type="text" id="teamInput" placeholder="YUSUF, RUDIN, SAHRUL, ABDUL, DIKA" />
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>🌦️ Cuaca (manual)</label>
-                    <input type="text" id="weatherInput" placeholder="PAGI: CERAH, SIANG: PANAS, dll" />
-                </div>
-                <div class="form-group">
-                    <label>🗑️ Waste (manual)</label>
-                    <input type="text" id="wasteInput" placeholder="AB: 1 PCS, NASI: 850gr, dll" />
-                </div>
-            </div>
-        </div>
-
-        <!-- ACTION BUTTONS -->
-        <div class="card">
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="generateReport()">📊 Generate Laporan</button>
-                <button class="btn btn-success" onclick="saveReport()">💾 Simpan Laporan</button>
-                <button class="btn btn-secondary" onclick="loadToday()">📂 Muat Hari Ini</button>
-                <button class="btn btn-secondary" onclick="clearAll()" style="color:#a05a4a;">🗑️ Reset</button>
-            </div>
-        </div>
-
-        <!-- REPORT PREVIEW -->
-        <div class="card">
-            <div class="flex-between">
-                <div class="card-title" style="margin-bottom:0;">📄 Preview Laporan</div>
-                <button class="btn btn-secondary btn-sm" onclick="copyReport()">📋 Salin</button>
-            </div>
-            <div id="reportOutput" class="report-preview" style="margin-top:12px;">
-                <span class="dim">Belum ada laporan. Upload 4 foto, ekstrak, lalu Generate.</span>
-            </div>
-        </div>
-
-        <!-- HISTORY -->
-        <div class="card">
-            <div class="flex-between">
-                <div class="card-title" style="margin-bottom:0;">📚 Riwayat Laporan</div>
-                <button class="btn btn-secondary btn-sm" onclick="loadHistory()">🔄 Refresh</button>
-            </div>
-            <div id="historyList" class="history-list" style="margin-top:12px;">
-                <div class="empty-state">Belum ada data tersimpan.</div>
-            </div>
-        </div>
-
+// ============================================================
+// 3. RENDER PRODUK
+// ============================================================
+function renderProducts() {
+  const container = document.getElementById('productList');
+  container.innerHTML = PRODUCTS.map(p => `
+    <div class="product-card" onclick="addToCart(${p.id})">
+      <div class="name">${p.nama}</div>
+      <div class="price">Rp ${p.harga.toLocaleString('id-ID')}</div>
     </div>
+  `).join('');
+}
 
-    <script>
-        // ============================================================
-        // GLOBAL STATE
-        // ============================================================
-        const STORAGE_KEY = 'geprek_reports';
-        let dynamicCounter = { menu: 0, ecom: 0 };
-        let expenseCounter = 0;
+// ============================================================
+// 4. KERANJANG
+// ============================================================
+function addToCart(id) {
+  const produk = PRODUCTS.find(p => p.id === id);
+  const existing = cart.find(c => c.id === id);
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({ ...produk, qty: 1 });
+  }
+  renderCart();
+  log(`+ ${produk.nama}`);
+}
 
-        // Mapping upload areas
-        const uploadIds = ['S1_1', 'S1_2', 'S2_1', 'S2_2'];
+function removeFromCart(id) {
+  cart = cart.filter(c => c.id !== id);
+  renderCart();
+}
 
-        // ============================================================
-        // INIT
-        // ============================================================
-        document.addEventListener('DOMContentLoaded', () => {
-            const today = new Date();
-            const y = today.getFullYear();
-            const m = String(today.getMonth() + 1).padStart(2, '0');
-            const d = String(today.getDate()).padStart(2, '0');
-            document.getElementById('reportDate').value = `${y}-${m}-${d}`;
-            updateDateMeta();
+function changeQty(id, delta) {
+  const item = cart.find(c => c.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) cart = cart.filter(c => c.id !== id);
+  renderCart();
+}
 
-            // Setup upload areas
-            uploadIds.forEach(id => setupUpload(id));
+function clearCart() {
+  cart = [];
+  renderCart();
+  log('Keranjang dikosongkan');
+}
 
-            document.getElementById('reportDate').addEventListener('change', updateDateMeta);
+function total() {
+  return cart.reduce((sum, c) => sum + c.harga * c.qty, 0);
+}
 
-            // Init dynamic items
-            addDynamicItem('menu');
-            addDynamicItem('ecom');
-            addExpense();
+function renderCart() {
+  const container = document.getElementById('cartItems');
+  if (cart.length === 0) {
+    container.innerHTML = '<div style="color:#aaa; font-size:13px;">Belum ada item</div>';
+  } else {
+    container.innerHTML = cart.map(c => `
+      <div class="cart-item">
+        <div class="info">
+          ${c.nama}
+          <div class="sub">Rp ${c.harga.toLocaleString('id-ID')} × ${c.qty}</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-sm btn-primary" onclick="changeQty(${c.id},-1)">−</button>
+          <button class="btn btn-sm btn-primary" onclick="changeQty(${c.id},1)">+</button>
+          <button class="btn btn-sm btn-danger" onclick="removeFromCart(${c.id})">×</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  document.getElementById('totalDisplay').textContent =
+    'Rp ' + total().toLocaleString('id-ID');
+  document.getElementById('btnPrint').disabled = cart.length === 0 || !isConnected;
+}
 
-            loadToday();
-            loadHistory();
-        });
+// ============================================================
+// 5. LOG
+// ============================================================
+function log(msg) {
+  const el = document.getElementById('log');
+  const time = new Date().toLocaleTimeString('id-ID');
+  el.innerHTML = `[${time}] ${msg}<br>` + el.innerHTML;
+}
 
-        // ============================================================
-        // DATE HELPERS
-        // ============================================================
-        function updateDateMeta() {
-            const dateVal = document.getElementById('reportDate').value;
-            if (!dateVal) return;
-            const parts = dateVal.split('-');
-            const year = parseInt(parts[0]);
-            const month = parseInt(parts[1]);
-            const day = parseInt(parts[2]);
-            const daysInMonth = new Date(year, month, 0).getDate();
-            document.getElementById('dayOfMonth').value = day;
-            document.getElementById('daysInMonth').value = daysInMonth;
+// ============================================================
+// 6. WEB BLUETOOTH - CONNECT
+// ============================================================
+async function connectPrinter() {
+  if (!navigator.bluetooth) {
+    alert('Browser kamu tidak mendukung Web Bluetooth.\nGunakan Chrome/Edge di Android atau Desktop.');
+    return;
+  }
+
+  const btn = document.getElementById('btnConnect');
+  btn.disabled = true;
+  btn.textContent = 'Scanning...';
+
+  try {
+    // Minta device Bluetooth
+    // acceptAllDevices: true → tampilkan semua perangkat
+    device = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: [
+        '000018f0-0000-1000-8000-00805f9b34fb',   // Service umum printer
+        '49535343-fe7d-4ae5-8fa9-9fafd205e455',   // Service umum lainnya
+        '0000ff00-0000-1000-8000-00805f9b34fb',   // Service Xprinter/Goojprt
+        'e7810a71-73ae-499d-8c15-faa9aef0c3f2',   // Service lain
+      ]
+    });
+
+    log(`Device ditemukan: ${device.name || 'Tanpa nama'}`);
+
+    const server = await device.gatt.connect();
+    log('GATT terhubung, mencari service...');
+
+    // Cari service & characteristic yang bisa di-write
+    const services = await server.getPrimaryServices();
+    log(`Ditemukan ${services.length} service`);
+
+    for (const service of services) {
+      log(`  Service: ${service.uuid}`);
+      try {
+        const chars = await service.getCharacteristics();
+        for (const c of chars) {
+          if (c.properties.write || c.properties.writeWithoutResponse) {
+            characteristic = c;
+            log(`  ✅ Characteristic write: ${c.uuid}`);
+            break;
+          }
         }
-
-        function getDateString() { return document.getElementById('reportDate').value; }
-
-        function getDayOfMonth() { return parseInt(document.getElementById('dayOfMonth').value) || 1; }
-
-        function getDaysInMonth() { return parseInt(document.getElementById('daysInMonth').value) || 30; }
-
-        // ============================================================
-        // UPLOAD SETUP
-        // ============================================================
-        function setupUpload(id) {
-            const fileInput = document.getElementById(`upload${id}`);
-            const area = document.getElementById(`upload${id}Area`);
-            const preview = document.getElementById(`preview${id}`);
-            const status = document.getElementById(`status${id}`);
-
-            area.addEventListener('click', () => fileInput.click());
-
-            fileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    preview.src = ev.target.result;
-                    preview.style.display = 'block';
-                    status.textContent = '📸 Siap';
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // ============================================================
-        // RESIZE GAMBAR
-        // ============================================================
-        function resizeImage(file, maxWidth) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const scale = Math.min(1, maxWidth / img.width);
-                        canvas.width = img.width * scale;
-                        canvas.height = img.height * scale;
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        canvas.toBlob((blob) => {
-                            if (blob) resolve(blob);
-                            else reject(new Error('Gagal resize'));
-                        }, 'image/jpeg', 0.85);
-                    };
-                    img.onerror = reject;
-                    img.src = e.target.result;
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // ============================================================
-        // OCR ALL 4 FOTO
-        // ============================================================
-        async function runOCRAll() {
-            // Cek semua file
-            const files = uploadIds.map(id => document.getElementById(`upload${id}`).files[0]);
-            if (files.some(f => !f)) {
-                showToast('Upload semua 4 foto terlebih dahulu!', 'error');
-                return;
-            }
-
-            // Tampilkan spinner semua
-            uploadIds.forEach(id => {
-                document.getElementById(`spinner${id}`).style.display = 'block';
-                document.getElementById(`status${id}`).textContent = '⏳ Memproses...';
-            });
-
-            try {
-                // Resize & OCR paralel per foto
-                const ocrPromises = uploadIds.map(async (id, idx) => {
-                    const file = files[idx];
-                    const resized = await resizeImage(file, 1200);
-                    const result = await Tesseract.recognize(resized, 'ind', {
-                        logger: (m) => {
-                            if (m.status === 'recognizing text') {
-                                document.getElementById(`status${id}`).textContent =
-                                    `⏳ OCR: ${Math.round(m.progress * 100)}%`;
-                            }
-                        },
-                        psm: 6
-                    });
-                    document.getElementById(`status${id}`).textContent =
-                        `✅ ${result.data.text.length} karakter`;
-                    document.getElementById(`spinner${id}`).style.display = 'none';
-                    return { id, text: result.data.text };
-                });
-
-                const results = await Promise.all(ocrPromises);
-
-                // Gabungkan teks per shift
-                const s1Text = results.filter(r => r.id.startsWith('S1')).map(r => r.text).join('\n');
-                const s2Text = results.filter(r => r.id.startsWith('S2')).map(r => r.text).join('\n');
-
-                console.log('S1 OCR:', s1Text);
-                console.log('S2 OCR:', s2Text);
-
-                // Parsing per shift
-                const parsedS1 = parseOCRText(s1Text);
-                const parsedS2 = parseOCRText(s2Text);
-
-                // Gabungkan hasil kedua shift
-                const combined = {
-                    sales: (parsedS1.sales || 0) + (parsedS2.sales || 0),
-                    cu: (parsedS1.cu || 0) + (parsedS2.cu || 0),
-                    menu: [...(parsedS1.menu || []), ...(parsedS2.menu || [])],
-                    ecom: [...(parsedS1.ecom || []), ...(parsedS2.ecom || [])],
-                    expenses: [...(parsedS1.expenses || []), ...(parsedS2.expenses || [])],
-                };
-
-                fillCombinedData(combined);
-
-                showToast('✅ Semua data berhasil diekstrak dan digabung!', 'success');
-            } catch (err) {
-                console.error(err);
-                showToast('❌ Gagal OCR, coba foto lebih jelas atau input manual', 'error');
-                uploadIds.forEach(id => {
-                    document.getElementById(`spinner${id}`).style.display = 'none';
-                    if (document.getElementById(`status${id}`).textContent.includes('⏳')) {
-                        document.getElementById(`status${id}`).textContent = '❌ Gagal';
-                    }
-                });
-            }
-        }
-
-        // ============================================================
-        // PARSING OCR (sama seperti sebelumnya, lebih fleksibel)
-        // ============================================================
-        function parseOCRText(text) {
-            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-            const result = {
-                sales: 0,
-                cu: 0,
-                menu: [],
-                ecom: [],
-                expenses: [],
-            };
-
-            // --- 1. Sales ---
-            let salesFound = false;
-            for (let line of lines) {
-                const match = line.match(/(?:Rp|RP|rp|R P)\s*[.:]?\s*([\d.,]+)/);
-                if (match) {
-                    const num = parseNumber(match[1]);
-                    if (num > 0 && !salesFound) {
-                        result.sales = num;
-                        salesFound = true;
-                        break;
-                    }
-                }
-            }
-            if (!salesFound) {
-                for (let line of lines) {
-                    if (/total|sales|penjualan/i.test(line)) {
-                        const nums = line.match(/[\d.,]+/g);
-                        if (nums) {
-                            const num = parseNumber(nums[nums.length - 1]);
-                            if (num > 0) { result.sales = num;
-                                salesFound = true; break; }
-                        }
-                    }
-                }
-            }
-            if (!salesFound) {
-                let maxNum = 0;
-                for (let line of lines) {
-                    const nums = line.match(/\b(\d{1,3}(?:\.\d{3})*|\d+)\b/g);
-                    if (nums) {
-                        for (let n of nums) {
-                            const num = parseNumber(n);
-                            if (num > maxNum && num < 100000000) maxNum = num;
-                        }
-                    }
-                }
-                if (maxNum > 0) result.sales = maxNum;
-            }
-
-            // --- 2. CU ---
-            for (let line of lines) {
-                if (/pax|cu|customer/i.test(line)) {
-                    const nums = line.match(/[\d.,]+/g);
-                    if (nums) {
-                        const num = parseNumber(nums[nums.length - 1]);
-                        if (num > 0) { result.cu = Math.round(num); break; }
-                    }
-                }
-            }
-            if (result.cu === 0) {
-                for (let line of lines) {
-                    const nums = line.match(/\b(\d{1,3})\b/g);
-                    if (nums) {
-                        for (let n of nums) {
-                            const num = parseInt(n);
-                            if (num > 0 && num < 500 && !line.includes('Rp') && !line.includes('rp')) {
-                                result.cu = num;
-                                break;
-                            }
-                        }
-                        if (result.cu > 0) break;
-                    }
-                }
-            }
-
-            // --- 3. Menu ---
-            const menuKeywords = ['geprek', 'jumbo', 'hemat', 'double', 'chic', 'saos', 'gangnam', 'minerale', 'pucuk', 'sijo',
-                'promo', 'extra', 'ayam', 'nasi', 'telor', 'sambal'
-            ];
-            for (let line of lines) {
-                const lower = line.toLowerCase();
-                let matched = false;
-                for (let kw of menuKeywords) {
-                    if (lower.includes(kw)) { matched = true; break; }
-                }
-                if (!matched) continue;
-                const nums = line.match(/\b(\d{1,3})\b/g);
-                let qty = 1;
-                if (nums && nums.length > 0) qty = parseInt(nums[nums.length - 1]);
-                let label = line.replace(/[\d.,]+/g, '').replace(/[:*\-]/g, '').trim();
-                if (label.length > 2) result.menu.push({ label, qty });
-            }
-            if (result.menu.length === 0) {
-                for (let line of lines) {
-                    if (line.length > 3 && line.length < 40 && !line.includes('Rp') && !line.includes('rp')) {
-                        const nums = line.match(/\b(\d{1,3})\b/g);
-                        let qty = 1;
-                        let label = line;
-                        if (nums && nums.length > 0) {
-                            qty = parseInt(nums[nums.length - 1]);
-                            label = line.replace(/[\d.,]+/g, '').replace(/[:*\-]/g, '').trim();
-                        }
-                        if (label.length > 2) result.menu.push({ label, qty });
-                    }
-                }
-            }
-
-            // --- 4. E-commerce ---
-            const ecomKeywords = ['dana', 'transfer', 'shopee', 'gofood', 'qris', 'qpon', 'tiktok', 'e-commerce', 'ecom',
-                'ovo', 'linkaja'
-            ];
-            for (let line of lines) {
-                const lower = line.toLowerCase();
-                let matched = false;
-                for (let kw of ecomKeywords) {
-                    if (lower.includes(kw)) { matched = true; break; }
-                }
-                if (!matched) continue;
-                const nums = line.match(/[\d.,]+/g);
-                if (nums) {
-                    const num = parseNumber(nums[nums.length - 1]);
-                    if (num > 0) {
-                        let label = line.replace(/[\d.,]+/g, '').replace(/[:*\-]/g, '').trim();
-                        if (label.length < 3) label = 'E-Commerce';
-                        result.ecom.push({ label, amount: num });
-                    }
-                }
-            }
-
-            // --- 5. Expenses ---
-            for (let line of lines) {
-                if (/pengeluaran|expense|gas|lpg|belanja|biaya|makan|minum/i.test(line)) {
-                    const nums = line.match(/[\d.,]+/g);
-                    if (nums) {
-                        const num = parseNumber(nums[nums.length - 1]);
-                        if (num > 0) {
-                            let desc = line.replace(/[\d.,]+/g, '').replace(/[:*\-]/g, '').trim();
-                            if (desc.length < 3) desc = 'Pengeluaran';
-                            result.expenses.push({ desc, amount: num });
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        function parseNumber(str) {
-            if (!str) return 0;
-            let cleaned = str.replace(/\./g, '').replace(',', '.');
-            const num = parseFloat(cleaned);
-            return isNaN(num) ? 0 : num;
-        }
-
-        // ============================================================
-        // FILL COMBINED DATA
-        // ============================================================
-        function fillCombinedData(parsed) {
-            if (parsed.sales > 0) setVal('totalSales', parsed.sales);
-            if (parsed.cu > 0) setVal('totalCu', parsed.cu);
-
-            // Menu
-            const menuContainer = document.getElementById('menuContainer');
-            menuContainer.innerHTML = '';
-            dynamicCounter.menu = 0;
-            if (parsed.menu && parsed.menu.length > 0) {
-                parsed.menu.forEach(item => addDynamicItem('menu', item.label, item.qty));
-            } else {
-                addDynamicItem('menu');
-            }
-
-            // Ecom
-            const ecomContainer = document.getElementById('ecomContainer');
-            ecomContainer.innerHTML = '';
-            dynamicCounter.ecom = 0;
-            if (parsed.ecom && parsed.ecom.length > 0) {
-                parsed.ecom.forEach(item => addDynamicItem('ecom', item.label, item.amount));
-            } else {
-                addDynamicItem('ecom');
-            }
-
-            // Expenses
-            const expContainer = document.getElementById('expensesContainer');
-            expContainer.innerHTML = '';
-            expenseCounter = 0;
-            if (parsed.expenses && parsed.expenses.length > 0) {
-                parsed.expenses.forEach(item => addExpense(item.desc, item.amount));
-            } else {
-                addExpense();
-            }
-        }
-
-        // ============================================================
-        // DYNAMIC ITEMS (Menu & E-Commerce)
-        // ============================================================
-        function addDynamicItem(type, label = '', value = 0) {
-            const container = document.getElementById(`${type}Container`);
-            if (!container) return;
-            const counter = dynamicCounter[type] || 0;
-            dynamicCounter[type] = counter + 1;
-            const idx = dynamicCounter[type];
-            const isMenu = type === 'menu';
-
-            const div = document.createElement('div');
-            div.className = 'dynamic-item';
-            div.id = `${type}_${idx}`;
-
-            const labelInput = document.createElement('input');
-            labelInput.type = 'text';
-            labelInput.placeholder = isMenu ? 'Nama Menu' : 'Metode';
-            labelInput.value = label || '';
-            labelInput.style.flex = '2';
-            labelInput.style.minWidth = '100px';
-
-            const valueInput = document.createElement('input');
-            valueInput.type = 'number';
-            valueInput.placeholder = isMenu ? 'Qty' : 'Rp';
-            valueInput.value = value || 0;
-            valueInput.min = 0;
-            valueInput.step = 1;
-            valueInput.style.width = '80px';
-
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'btn-remove';
-            removeBtn.textContent = '✕';
-            removeBtn.onclick = () => {
-                if (container.children.length > 1) {
-                    div.remove();
-                } else {
-                    showToast('Minimal satu item', 'error');
-                }
-            };
-
-            div.appendChild(labelInput);
-            div.appendChild(valueInput);
-            div.appendChild(removeBtn);
-            container.appendChild(div);
-        }
-
-        function getDynamicItems(type) {
-            const container = document.getElementById(`${type}Container`);
-            if (!container) return [];
-            const items = [];
-            container.querySelectorAll('.dynamic-item').forEach(div => {
-                const inputs = div.querySelectorAll('input');
-                if (inputs.length >= 2) {
-                    const label = inputs[0].value.trim() || '(tanpa nama)';
-                    const val = parseFloat(inputs[1].value) || 0;
-                    if (val > 0 || label !== '(tanpa nama)') {
-                        items.push({ label, value: val });
-                    }
-                }
-            });
-            return items;
-        }
-
-        function setDynamicItems(type, data) {
-            const container = document.getElementById(`${type}Container`);
-            if (!container) return;
-            container.innerHTML = '';
-            dynamicCounter[type] = 0;
-            if (!data || data.length === 0) {
-                addDynamicItem(type);
-                return;
-            }
-            data.forEach(item => addDynamicItem(type, item.label, item.value));
-        }
-
-        // ============================================================
-        // EXPENSES
-        // ============================================================
-        function addExpense(desc = '', amount = 0) {
-            const container = document.getElementById('expensesContainer');
-            if (!container) return;
-            expenseCounter += 1;
-            const idx = expenseCounter;
-            const row = document.createElement('div');
-            row.className = 'expense-row';
-            row.id = `exp_${idx}`;
-            row.innerHTML = `
-                <div class="form-group">
-                    <label>Jenis</label>
-                    <input type="text" id="exp_desc_${idx}" value="${escapeHtml(desc)}" placeholder="misal: GAS LPG" />
-                </div>
-                <div class="form-group">
-                    <label>Jumlah (Rp)</label>
-                    <input type="number" id="exp_amount_${idx}" value="${amount || 0}" min="0" step="1" />
-                </div>
-                <button class="btn-remove-exp" onclick="removeExpense(${idx})">✕ Hapus</button>
-            `;
-            container.appendChild(row);
-        }
-
-        function removeExpense(idx) {
-            const el = document.getElementById(`exp_${idx}`);
-            if (el) el.remove();
-        }
-
-        function getExpenses() {
-            const container = document.getElementById('expensesContainer');
-            const rows = container.querySelectorAll('.expense-row');
-            const result = [];
-            rows.forEach(row => {
-                const descInput = row.querySelector('input[type="text"]');
-                const amountInput = row.querySelector('input[type="number"]');
-                if (descInput && amountInput) {
-                    const desc = descInput.value.trim() || '(tanpa nama)';
-                    const amount = parseFloat(amountInput.value) || 0;
-                    if (amount > 0 || desc !== '(tanpa nama)') {
-                        result.push({ desc, amount });
-                    }
-                }
-            });
-            return result;
-        }
-
-        function setExpenses(data) {
-            const container = document.getElementById('expensesContainer');
-            container.innerHTML = '';
-            expenseCounter = 0;
-            if (!data || data.length === 0) {
-                addExpense();
-                return;
-            }
-            data.forEach(item => addExpense(item.desc, item.amount));
-        }
-
-        // ============================================================
-        // UTILITY
-        // ============================================================
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        }
-
-        function getVal(id) {
-            const el = document.getElementById(id);
-            if (!el) return 0;
-            const v = parseFloat(el.value);
-            return isNaN(v) ? 0 : v;
-        }
-
-        function getValInt(id) { return Math.round(getVal(id)); }
-
-        function setVal(id, val) {
-            const el = document.getElementById(id);
-            if (el) el.value = val;
-        }
-
-        function getText(id) {
-            const el = document.getElementById(id);
-            return el ? el.value.trim() : '';
-        }
-
-        function getCombinedData() {
-            return {
-                sales: getValInt('totalSales'),
-                cu: getValInt('totalCu'),
-                menu: getDynamicItems('menu'),
-                ecom: getDynamicItems('ecom'),
-                expenses: getExpenses(),
-            };
-        }
-
-        function setCombinedData(data) {
-            if (!data) return;
-            setVal('totalSales', data.sales || 0);
-            setVal('totalCu', data.cu || 0);
-            setDynamicItems('menu', data.menu || []);
-            setDynamicItems('ecom', data.ecom || []);
-            setExpenses(data.expenses || []);
-        }
-
-        // ============================================================
-        // GENERATE REPORT
-        // ============================================================
-        function generateReport() {
-            const data = getCombinedData();
-            const totalSales = data.sales;
-            const totalCu = data.cu;
-            const avg = totalCu > 0 ? totalSales / totalCu : 0;
-
-            const dateStr = getDateString();
-            const dayOfMonth = getDayOfMonth();
-            const daysInMonth = getDaysInMonth();
-
-            const allReports = getAllReports();
-            const prevDate = getPreviousDate(dateStr);
-            const prevReport = allReports[prevDate] || null;
-            const prevTotalSales = prevReport ? prevReport.monthlyTotalSales || 0 : 0;
-            const prevTotalCu = prevReport ? prevReport.monthlyTotalCu || 0 : 0;
-
-            const totalSalesBulanan = totalSales + prevTotalSales;
-            const totalCuBulanan = totalCu + prevTotalCu;
-            const avgOmset = dayOfMonth > 0 ? totalSalesBulanan / dayOfMonth : 0;
-            const avgCu = dayOfMonth > 0 ? totalCuBulanan / dayOfMonth : 0;
-            const estimasiSelesBulanan = avgOmset * daysInMonth;
-
-            // Menu lines
-            const menuMap = {};
-            data.menu.forEach(item => {
-                const key = item.label.trim().toLowerCase();
-                if (menuMap[key]) menuMap[key] += item.value;
-                else menuMap[key] = item.value;
-            });
-            const menuLines = Object.entries(menuMap)
-                .map(([label, qty]) => `»${label.padEnd(28)} : ${qty}`)
-                .join('\n');
-
-            const ecomLines = data.ecom.map(item =>
-                `${item.label.padEnd(18)}: Rp. ${formatNumber(item.value)}`
-            ).join('\n');
-
-            const expenseLines = data.expenses.map(e =>
-                `- ${e.desc} : Rp. ${formatNumber(e.amount)}`
-            ).join('\n');
-            const totalExpenses = data.expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-
-            const team = getText('teamInput') || '-';
-            const weather = getText('weatherInput') || '(isi manual)';
-            const waste = getText('wasteInput') || '(isi manual)';
-            const dateDisplay = formatDateDisplay(dateStr);
-            const dayName = getDayName(dateStr);
-
-            let report = '';
-            report += `🐓 *LAPORAN SELES GEPREKINAJA SITANGGAL BREBES* 🐓\n`;
-            report += `*${dateDisplay}*\n\n`;
-            report += `GO DI TGL : ${dayOfMonth}\n`;
-            report += `GO DAY : ${dayName}\n`;
-            report += `===========================\n\n`;
-            report += `🗂️ 𝑳𝑨𝑷𝑶𝑹𝑨𝑵 𝑺𝑨𝑳𝑬𝑺 𝑩𝑼𝑳𝑨𝑵𝑨𝑵 \n\n`;
-            report += `»𝑻𝑨𝑹𝑮𝑬𝑻 𝑺𝑨𝑳𝑬𝑺 𝑩𝑼𝑳𝑨𝑵𝑨𝑵:  RP.100.000.000\n`;
-            report += `»𝑬𝑺𝑻𝑰𝑴𝑨𝑺𝑰 𝑺𝑨𝑳𝑬𝑺 _𝑩𝑼𝑳𝑨𝑵𝑨N_ : ${formatNumber(estimasiSelesBulanan)}\n`;
-            report += `»𝑻𝑶𝑻𝑨𝑳 𝑺𝑨𝑳𝑬𝑺 𝑩𝑼𝑳𝑨𝑵𝑨𝑵:Rp. ${formatNumber(totalSalesBulanan)}\n\n`;
-            report += `𝑻𝑶𝑻𝑨𝑳 𝑪𝑼    : ${totalCuBulanan}\n`;
-            report += `𝑨𝑽𝑮 𝑶𝑴𝑺𝑬𝑻 : Rp. ${formatNumber(avgOmset)}\n`;
-            report += `𝑨𝑽𝑮 𝑪𝑼        : ${Math.round(avgCu)}\n\n`;
-            report += `==========================\n\n`;
-            report += `🗂️ 𝑳𝑨𝑷𝑶𝑹𝑨𝑵 𝑺𝑨𝑳𝑬𝑺 𝑯𝑨𝑹𝑰𝑨𝑵: \n\n`;
-            report += `𝑻𝑨𝑹𝑮𝑬𝑻 𝑺𝑨𝑳𝑬𝑺 𝑯𝑨𝑹𝑰𝑨𝑵:\n`;
-            report += `𝑹𝑷. 5.000.000\n\n`;
-            report += `𝑺𝑨𝑳𝑬𝑺: Rp.${formatNumber(totalSales)}\n`;
-            report += `𝑪𝑼      : ${totalCu}\n`;
-            report += `𝑨𝑽𝑮    : ${Math.round(avg)}\n`;
-            report += `========================\n\n`;
-            report += `🍱 𝑴𝑬𝑵𝑼 𝑩𝑨𝑹𝑼 𝑮𝑬𝑷𝑹𝑬𝑲𝑰𝑵:\n`;
-            report += `${menuLines || '(tidak ada menu)'}\n\n`;
-            report += `===========================\n\n`;
-            report += `📱𝐄-𝐂𝐎𝐌𝐌𝐄𝐑𝐂𝐄:\n`;
-            report += `${ecomLines || '(tidak ada e-commerce)'}\n\n`;
-            report += `=======================\n\n`;
-            report += `📤𝐏𝐄𝐍𝐆𝐄𝐋𝐔𝐀𝐑𝐀𝐍:\n`;
-            report += `${expenseLines || '(tidak ada pengeluaran)'}\n\n`;
-            report += `𝐓𝐎𝐓𝐀𝐋 𝐏𝐄𝐍𝐆𝐄𝐋𝐔𝐀𝐑𝐀𝐍⬇️\n`;
-            report += `𝐑𝐏. ${formatNumber(totalExpenses)}\n`;
-            report += `======================\n\n`;
-            report += `🗑️𝐖𝐀𝐒𝐓𝐄:\n`;
-            report += `${waste}\n\n`;
-            report += `====================\n\n`;
-            report += `✨𝐂𝐔𝐀𝐂𝐀:\n`;
-            report += `${weather}\n\n`;
-            report += `=======================\n\n`;
-            report += `👩🏻‍🍳𝐓𝐈𝐌 𝐘𝐀𝐍𝐆 𝐁𝐄𝐑𝐓𝐔𝐆𝐀𝐒 𝐇𝐀𝐑𝐈 *INI*\n`;
-            report += `${team}\n\n`;
-            report += `𝗮𝗹𝗵𝗮𝗺𝗱𝘂𝗹𝗹𝗶𝗹𝗮𝗵, 𝘁𝗲𝗿𝗶𝗺𝗮𝗸𝗮𝘀𝗶𝗵 𝗱𝗮𝗻 𝗵𝗮𝘁𝗶 𝗵𝗮𝘁𝗶 𝗱𝗶𝗷𝗮𝗹𝗮𝗻😊🙏🏻`;
-
-            document.getElementById('reportOutput').textContent = report;
-        }
-
-        // ============================================================
-        // SAVE / LOAD / HISTORY
-        // ============================================================
-        function getAllReports() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                return raw ? JSON.parse(raw) : {};
-            } catch { return {}; }
-        }
-
-        function saveReports(data) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        }
-
-        function saveReport() {
-            const dateStr = getDateString();
-            if (!dateStr) {
-                showToast('Pilih tanggal terlebih dahulu!', 'error');
-                return;
-            }
-            const data = getCombinedData();
-            const allReports = getAllReports();
-            const prevDate = getPreviousDate(dateStr);
-            const prevReport = allReports[prevDate] || null;
-            const prevTotalSales = prevReport ? prevReport.monthlyTotalSales || 0 : 0;
-            const prevTotalCu = prevReport ? prevReport.monthlyTotalCu || 0 : 0;
-            const dayOfMonth = getDayOfMonth();
-            const daysInMonth = getDaysInMonth();
-            const totalSalesBulanan = data.sales + prevTotalSales;
-            const totalCuBulanan = data.cu + prevTotalCu;
-            const avgOmset = dayOfMonth > 0 ? totalSalesBulanan / dayOfMonth : 0;
-            const avgCu = dayOfMonth > 0 ? totalCuBulanan / dayOfMonth : 0;
-            const estimasiSelesBulanan = avgOmset * daysInMonth;
-
-            const reportData = {
-                date: dateStr,
-                dayOfMonth,
-                daysInMonth,
-                combined: {
-                    sales: data.sales,
-                    cu: data.cu,
-                    menu: data.menu,
-                    ecom: data.ecom,
-                    expenses: data.expenses,
-                    totalExpenses: data.expenses.reduce((s, e) => s + (e.amount || 0), 0),
-                },
-                monthly: {
-                    prevTotalSales,
-                    prevTotalCu,
-                    totalSalesBulanan,
-                    totalCuBulanan,
-                    avgOmset,
-                    avgCu,
-                    estimasiSelesBulanan,
-                },
-                manual: {
-                    team: getText('teamInput'),
-                    weather: getText('weatherInput'),
-                    waste: getText('wasteInput'),
-                },
-                timestamp: Date.now(),
-            };
-
-            allReports[dateStr] = reportData;
-            saveReports(allReports);
-            showToast('✅ Laporan berhasil disimpan!', 'success');
-            loadHistory();
-            generateReport();
-        }
-
-        function loadToday() {
-            const dateStr = getDateString();
-            if (!dateStr) return;
-            loadReportByDate(dateStr);
-        }
-
-        function loadReportByDate(dateStr) {
-            const allReports = getAllReports();
-            const data = allReports[dateStr];
-            if (!data) {
-                showToast(`Belum ada laporan untuk ${dateStr}`, 'error');
-                return;
-            }
-            setVal('reportDate', data.date);
-            setCombinedData(data.combined);
-            setVal('teamInput', data.manual?.team || '');
-            setVal('weatherInput', data.manual?.weather || '');
-            setVal('wasteInput', data.manual?.waste || '');
-            setVal('dayOfMonth', data.dayOfMonth || getDayOfMonth());
-            setVal('daysInMonth', data.daysInMonth || getDaysInMonth());
-            showToast(`📂 Laporan ${dateStr} dimuat`, 'success');
-            generateReport();
-        }
-
-        function getPreviousDate(dateStr) {
-            if (!dateStr) return '';
-            const parts = dateStr.split('-');
-            const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-            d.setDate(d.getDate() - 1);
-            const y = d.getFullYear();
-            const m = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${y}-${m}-${day}`;
-        }
-
-        function loadHistory() {
-            const allReports = getAllReports();
-            const container = document.getElementById('historyList');
-            const dates = Object.keys(allReports).sort((a, b) => b.localeCompare(a));
-            if (dates.length === 0) {
-                container.innerHTML = `<div class="empty-state">Belum ada data tersimpan.</div>`;
-                return;
-            }
-            let html = '';
-            dates.forEach(date => {
-                const data = allReports[date];
-                const sales = data.combined?.sales || 0;
-                const cu = data.combined?.cu || 0;
-                html += `
-                    <div class="history-item">
-                        <div>
-                            <span class="h-date">📅 ${date}</span>
-                            <span style="margin-left:10px;font-size:13px;color:#6b6b7a;">
-                                Sales: <span class="h-sales">Rp ${formatNumber(sales)}</span>
-                                · CU: <span class="h-cu">${cu}</span>
-                            </span>
-                        </div>
-                        <div class="h-actions">
-                            <button class="load-btn" onclick="loadReportByDate('${date}')" title="Muat">📂</button>
-                            <button class="del-btn" onclick="deleteReport('${date}')" title="Hapus">🗑️</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function deleteReport(dateStr) {
-            if (!confirm(`Hapus laporan ${dateStr}?`)) return;
-            const allReports = getAllReports();
-            delete allReports[dateStr];
-            saveReports(allReports);
-            loadHistory();
-            showToast(`🗑️ Laporan ${dateStr} dihapus`, 'error');
-        }
-
-        // ============================================================
-        // COPY / CLEAR
-        // ============================================================
-        function copyReport() {
-            const text = document.getElementById('reportOutput').textContent;
-            if (!text || text.includes('Belum ada laporan')) {
-                showToast('Tidak ada laporan untuk disalin', 'error');
-                return;
-            }
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('📋 Laporan disalin ke clipboard!', 'success');
-            }).catch(() => {
-                const ta = document.createElement('textarea');
-                ta.value = text;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                ta.remove();
-                showToast('📋 Laporan disalin!', 'success');
-            });
-        }
-
-        function clearAll() {
-            if (!confirm('Reset semua input? Data yang belum disimpan akan hilang.')) return;
-            setVal('totalSales', 0);
-            setVal('totalCu', 0);
-            setDynamicItems('menu', []);
-            setDynamicItems('ecom', []);
-            setExpenses([]);
-            setVal('teamInput', '');
-            setVal('weatherInput', '');
-            setVal('wasteInput', '');
-            document.getElementById('reportOutput').innerHTML =
-                `<span class="dim">Belum ada laporan. Upload 4 foto, ekstrak, lalu Generate.</span>`;
-            showToast('🗑️ Semua input direset', 'error');
-        }
-
-        // ============================================================
-        // FORMAT HELPERS
-        // ============================================================
-        function formatNumber(n) {
-            if (n === undefined || n === null || isNaN(n)) return '0';
-            return Math.round(n).toLocaleString('id-ID');
-        }
-
-        function formatDateDisplay(dateStr) {
-            if (!dateStr) return '';
-            const parts = dateStr.split('-');
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-            const day = parseInt(parts[2]);
-            const month = months[parseInt(parts[1]) - 1];
-            return `${day}.${month}.${parts[0]}`;
-        }
-
-        function getDayName(dateStr) {
-            if (!dateStr) return '';
-            const parts = dateStr.split('-');
-            const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            return days[d.getDay()];
-        }
-
-        // ============================================================
-        // TOAST
-        // ============================================================
-        function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.className = 'toast show ' + type;
-            clearTimeout(toast._timer);
-            toast._timer = setTimeout(() => toast.classList.remove('show'), 2800);
-        }
-
-        // ============================================================
-        // KEYBOARD SHORTCUT
-        // ============================================================
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault();
-                generateReport();
-            }
-        });
-    </script>
-
+      } catch (e) {
+        log(`  ⚠️ Gagal baca characteristic: ${e.message}`);
+      }
+      if (characteristic) break;
+    }
+
+    if (!characteristic) {
+      throw new Error('Tidak ada characteristic yang bisa di-write. Cek UUID printer.');
+    }
+
+    isConnected = true;
+    updateStatus(true);
+    log('✅ Printer siap!');
+    btn.textContent = 'Terhubung';
+
+    // Auto-reconnect kalau terputus
+    device.addEventListener('gattserverdisconnected', () => {
+      isConnected = false;
+      updateStatus(false);
+      log('⚠️ Printer terputus');
+      document.getElementById('btnConnect').textContent = 'Connect';
+      document.getElementById('btnConnect').disabled = false;
+    });
+
+  } catch (e) {
+    log(`❌ Gagal connect: ${e.message}`);
+    alert('Gagal connect: ' + e.message);
+    btn.textContent = 'Connect';
+    btn.disabled = false;
+  }
+}
+
+function updateStatus(connected) {
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  if (connected) {
+    dot.classList.add('connected');
+    text.textContent = 'Printer terhubung';
+  } else {
+    dot.classList.remove('connected');
+    text.textContent = 'Printer belum terhubung';
+  }
+  document.getElementById('btnPrint').disabled = cart.length === 0 || !isConnected;
+}
+
+// ============================================================
+// 7. ESC/POS - KIRIM DATA
+// ============================================================
+const ESC = 0x1B;
+const GS  = 0x1D;
+
+function textToBytes(str) {
+  return new TextEncoder().encode(str);
+}
+
+// Kirim data per 20 byte (limit BLE MTU)
+async function kirim(data) {
+  if (!characteristic) throw new Error('Printer belum terhubung');
+  for (let i = 0; i < data.length; i += 20) {
+    const chunk = data.slice(i, i + 20);
+    await characteristic.writeValue(chunk);
+  }
+}
+
+// Helper: perintah ESC/POS
+const cmd = {
+  init:        () => new Uint8Array([ESC, 0x40]),
+  alignLeft:   () => new Uint8Array([ESC, 0x61, 0x00]),
+  alignCenter: () => new Uint8Array([ESC, 0x61, 0x01]),
+  boldOn:      () => new Uint8Array([ESC, 0x45, 0x01]),
+  boldOff:     () => new Uint8Array([ESC, 0x45, 0x00]),
+  doubleOn:    () => new Uint8Array([GS, 0x21, 0x11]), // double width+height
+  doubleOff:   () => new Uint8Array([GS, 0x21, 0x00]),
+  cut:         () => new Uint8Array([GS, 0x56, 0x00]),
+  feed:        (n=1) => new Uint8Array([ESC, 0x64, n]),
+};
+
+// Format baris: nama item + harga rata kanan
+function lineItem(nama, qty, subtotal, lebar = 32) {
+  const kiri = `${nama} x${qty}`;
+  const kanan = `Rp${subtotal.toLocaleString('id-ID')}`;
+  const padding = Math.max(1, lebar - kiri.length - kanan.length);
+  return kiri + ' '.repeat(padding) + kanan + '\n';
+}
+
+function lineTotal(label, nilai, lebar = 32) {
+  const kanan = `Rp${nilai.toLocaleString('id-ID')}`;
+  const padding = Math.max(1, lebar - label.length - kanan.length);
+  return label + ' '.repeat(padding) + kanan + '\n';
+}
+
+// ============================================================
+// 8. CETAK STRUK
+// ============================================================
+async function cetakStruk() {
+  if (!isConnected || !characteristic) {
+    alert('Printer belum terhubung!');
+    return;
+  }
+  if (cart.length === 0) {
+    alert('Keranjang kosong!');
+    return;
+  }
+
+  const btn = document.getElementById('btnPrint');
+  btn.disabled = true;
+  btn.textContent = 'Mencetak...';
+
+  try {
+    // ---- INISIALISASI ----
+    await kirim(cmd.init());
+
+    // ---- HEADER ----
+    await kirim(cmd.alignCenter());
+    await kirim(cmd.boldOn());
+    await kirim(cmd.doubleOn());
+    await kirim(textToBytes('TOKO KASEN\n'));
+    await kirim(cmd.doubleOff());
+    await kirim(cmd.boldOff());
+    await kirim(textToBytes('Jl. Merdeka No. 123, Jakarta\n'));
+    await kirim(textToBytes('Telp: 0812-3456-7890\n'));
+    await kirim(textToBytes('================================\n'));
+
+    // ---- INFO TRANSAKSI ----
+    await kirim(cmd.alignLeft());
+    const now = new Date();
+    const tgl = now.toLocaleDateString('id-ID');
+    const jam = now.toLocaleTimeString('id-ID');
+    await kirim(textToBytes(`Tanggal: ${tgl} ${jam}\n`));
+    await kirim(textToBytes(`No. Trx: TRX-${Date.now().toString().slice(-6)}\n`));
+    await kirim(textToBytes('--------------------------------\n'));
+
+    // ---- ITEM ----
+    for (const item of cart) {
+      const subtotal = item.harga * item.qty;
+      await kirim(textToBytes(lineItem(item.nama, item.qty, subtotal)));
+    }
+
+    await kirim(textToBytes('--------------------------------\n'));
+
+    // ---- TOTAL ----
+    await kirim(cmd.boldOn());
+    await kirim(textToBytes(lineTotal('TOTAL', total())));
+    await kirim(cmd.boldOff());
+
+    // ---- PEMBAYARAN (opsional) ----
+    await kirim(textToBytes(lineTotal('Tunai', total())));
+    await kirim(textToBytes(lineTotal('Kembali', 0)));
+
+    await kirim(textToBytes('================================\n'));
+
+    // ---- FOOTER ----
+    await kirim(cmd.alignCenter());
+    await kirim(textToBytes('\n'));
+    await kirim(textToBytes('~ Terima Kasih ~\n'));
+    await kirim(textToBytes('Selamat berbelanja kembali\n'));
+    await kirim(textToBytes('\n\n\n'));
+
+    // ---- CUT ----
+    await kirim(cmd.cut());
+
+    log('✅ Struk berhasil dicetak!');
+    clearCart();
+
+  } catch (e) {
+    log(`❌ Gagal cetak: ${e.message}`);
+    alert('Gagal cetak: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🖨️ Cetak Struk';
+  }
+}
+
+// ============================================================
+// 9. INIT
+// ============================================================
+renderProducts();
+renderCart();
+log('Aplikasi siap. Klik "Connect" untuk menghubungkan printer.');
+</script>
 </body>
 </html>
